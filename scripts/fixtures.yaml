@@ -1,0 +1,149 @@
+# Fixture catalog for thumbnail-extractor.
+#
+# Single source of truth for test samples. Downloads land in
+# test/fixtures/ (gitignored) and are pinned here by URL, byte size,
+# and SHA-256 so a fetch either matches exactly or fails loudly.
+#
+# Add a format:
+#   1. Add a key under `formats` (an empty list is enough to start).
+#   2. Append at least one sample with a `decodable: true` preview.
+#   3. `pnpm fixtures` downloads it; `pnpm fixtures:check` enforces the gate.
+#
+# Add a sample: append a mapping under that format. Required fields:
+#   id, filename, url, bytes, sha256, license, source, previews
+# Optional: note
+#
+# Each preview:
+#   width, height, bytes
+#   kind: strips | jpeg-interchange-format
+#   jpeg: baseline | progressive | lossless
+#   decodable: true | false
+
+formats:
+  tiff:
+    - id: tiff-child-ifd
+      filename: tiff-child-ifd.tiff
+      url: https://raw.githubusercontent.com/python-pillow/Pillow/3078cab2618bf70537e5a1e646e156583af93ea3/Tests/images/child_ifd.tiff
+      bytes: 2971
+      sha256: 3ee712e0f777574336da10be36a2d09059fc45b4a0d08bd728174d7a4cada76e
+      license: HPND (Pillow test images)
+      source: python-pillow/Pillow
+      note: >
+        Tiny TIFF with three JPEG-compressed images: 32x32 in IFD0, then
+        16x16 and 8x8 as SubIFDs.
+      previews:
+        - width: 32
+          height: 32
+          bytes: 647
+          kind: strips
+          jpeg: baseline
+          decodable: true
+        - width: 16
+          height: 16
+          bytes: 635
+          kind: strips
+          jpeg: baseline
+          decodable: true
+        - width: 8
+          height: 8
+          bytes: 635
+          kind: strips
+          jpeg: baseline
+          decodable: true
+
+    - id: tiff-old-style-jpeg
+      filename: tiff-old-style-jpeg.tif
+      url: https://raw.githubusercontent.com/python-pillow/Pillow/3078cab2618bf70537e5a1e646e156583af93ea3/Tests/images/old-style-jpeg-compression.tif
+      bytes: 213760
+      sha256: 058d757030255eb21d4c42bf3ee7b79cb5527f25307cd6c140c0d799c65a817b
+      license: HPND (Pillow test images)
+      source: python-pillow/Pillow
+      note: Large (4160x870) baseline JPEG stored in TIFF strips.
+      previews:
+        - width: 4160
+          height: 870
+          bytes: 212992
+          kind: strips
+          jpeg: baseline
+          decodable: true
+
+    - id: tiff-kodak-dcs520c
+      filename: tiff-kodak-dcs520c.tif
+      url: https://raw.pixls.us/data/Kodak/DCS520C/23HK3627.TIF
+      bytes: 1970973
+      sha256: d95e983bea9cf13f356e49b0f59629306bc7a51882ff20766c74ccff5f007d69
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Kodak DCS520C
+      note: >
+        Real camera TIFF. Its preview is lossless JPEG (SOF3), which
+        standalone JPEG decoders reject — kept as an edge case, not
+        counted as a working preview.
+      previews:
+        - width: 1736
+          height: 1160
+          bytes: 1697917
+          kind: strips
+          jpeg: lossless
+          decodable: false
+
+  dng:
+    - id: dng-canon-5d3-lossy
+      filename: dng-canon-5d3-lossy.dng
+      url: https://raw.pixls.us/data/Adobe%20DNG%20Converter/Canon%20EOS%205D%20Mark%20III/5G4A9394-compressed-lossy.DNG
+      bytes: 6193902
+      sha256: 159326856c29073e845c3c5a9ecf98c6474f43ca15798a88ad5e2baecd0664b7
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Adobe DNG Converter, Canon EOS 5D Mark III
+      note: >
+        Contains three baseline-JPEG previews in nested SubIFDs
+        (256x171, 1024x683, 5760x3840).
+      previews:
+        - width: 256
+          height: 171
+          bytes: 11034
+          kind: strips
+          jpeg: baseline
+          decodable: true
+        - width: 1024
+          height: 683
+          bytes: 49574
+          kind: strips
+          jpeg: baseline
+          decodable: true
+        - width: 5760
+          height: 3840
+          bytes: 1235564
+          kind: strips
+          jpeg: baseline
+          decodable: true
+
+  cr2:
+    - id: cr2-canon-40d
+      filename: cr2-canon-40d.cr2
+      url: https://raw.pixls.us/data/Canon/EOS%2040D/_MG_0153.CR2
+      bytes: 10931826
+      sha256: 775c806358fedddec7622113a5e399a3330bd5a65e35e37ae1108d8bf58067be
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Canon EOS 40D
+      note: >
+        CR2 header (IFD0 -> IFD3) plus a JPEGInterchangeFormat thumbnail.
+        The full-size IFD4 preview is lossless JPEG (SOF3).
+      previews:
+        - width: 1936
+          height: 1288
+          bytes: 365662
+          kind: strips
+          jpeg: baseline
+          decodable: true
+        - width: 160
+          height: 120
+          bytes: 8071
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+        - width: 3888
+          height: 2592
+          bytes: 9578955
+          kind: strips
+          jpeg: lossless
+          decodable: false

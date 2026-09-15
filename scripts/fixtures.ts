@@ -3,8 +3,9 @@
  * Fixture downloader for thumbnail-extractor.
  *
  * Downloads genuine sample images (RAW / DNG / TIFF) from public sources into
- * `test/fixtures/`, which is gitignored. Every file is pinned by byte size and
- * SHA-256 so a download either matches exactly or fails loudly.
+ * `test/fixtures/`, which is gitignored. The catalog lives in `fixtures.yaml`
+ * next to this script; every file is pinned by byte size and SHA-256 so a
+ * download either matches exactly or fails loudly.
  *
  * Run directly with Node (no build step):
  *
@@ -19,27 +20,27 @@
  */
 
 import { createHash } from "node:crypto";
-import { mkdir, readFile, stat, writeFile, unlink } from "node:fs/promises";
+import { mkdir, readFile, stat, writeFile, unlink, rename } from "node:fs/promises";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { dirname, join } from "node:path";
+import { basename, dirname, join } from "node:path";
+import { parse as parseYaml } from "yaml";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const FIXTURE_DIR = join(HERE, "..", "test", "fixtures");
-
-/** Formats the extractor claims to support. Each must have a working fixture. */
-export const SUPPORTED_FORMATS = ["tiff", "dng", "cr2"] as const;
-
-export type FormatId = (typeof SUPPORTED_FORMATS)[number];
+const MANIFEST_PATH = join(HERE, "fixtures.yaml");
 
 /** How an embedded preview is encoded. `lossless` previews are not viewable. */
 type JpegKind = "baseline" | "progressive" | "lossless";
+
+type PreviewKind = "strips" | "jpeg-interchange-format";
 
 export interface PreviewExpectation {
   width: number;
   height: number;
   bytes: number;
   /** Where the bytes live inside the container. */
-  kind: "strips" | "jpeg-interchange-format";
+  kind: PreviewKind;
   jpeg: JpegKind;
   /** True when a normal JPEG decoder can open these bytes. */
   decodable: boolean;
@@ -47,7 +48,7 @@ export interface PreviewExpectation {
 
 export interface Fixture {
   id: string;
-  format: FormatId;
+  format: string;
   filename: string;
   url: string;
   bytes: number;
@@ -59,97 +60,139 @@ export interface Fixture {
   previews: PreviewExpectation[];
 }
 
+const JPEG_KINDS = new Set<JpegKind>(["baseline", "progressive", "lossless"]);
+const PREVIEW_KINDS = new Set<PreviewKind>(["strips", "jpeg-interchange-format"]);
+const SHA256_RE = /^[0-9a-f]{64}$/;
+
+function fail(path: string, message: string): never {
+  throw new Error(`${basename(MANIFEST_PATH)}: ${path}: ${message}`);
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function asString(value: unknown, path: string): string {
+  if (typeof value !== "string" || value.trim() === "") {
+    fail(path, "must be a non-empty string");
+  }
+  return value.trim();
+}
+
+function asInteger(value: unknown, path: string): number {
+  if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+    fail(path, "must be a non-negative integer");
+  }
+  return value;
+}
+
+function asBoolean(value: unknown, path: string): boolean {
+  if (typeof value !== "boolean") fail(path, "must be true or false");
+  return value;
+}
+
+function parsePreview(value: unknown, path: string): PreviewExpectation {
+  if (!isPlainObject(value)) fail(path, "must be a mapping");
+  const kind = asString(value.kind, `${path}.kind`);
+  if (!PREVIEW_KINDS.has(kind as PreviewKind)) {
+    fail(path, `kind must be one of ${[...PREVIEW_KINDS].join(", ")}`);
+  }
+  const jpeg = asString(value.jpeg, `${path}.jpeg`);
+  if (!JPEG_KINDS.has(jpeg as JpegKind)) {
+    fail(path, `jpeg must be one of ${[...JPEG_KINDS].join(", ")}`);
+  }
+  return {
+    width: asInteger(value.width, `${path}.width`),
+    height: asInteger(value.height, `${path}.height`),
+    bytes: asInteger(value.bytes, `${path}.bytes`),
+    kind: kind as PreviewKind,
+    jpeg: jpeg as JpegKind,
+    decodable: asBoolean(value.decodable, `${path}.decodable`),
+  };
+}
+
+function parseFixture(value: unknown, format: string, path: string): Fixture {
+  if (!isPlainObject(value)) fail(path, "must be a mapping");
+  const filename = asString(value.filename, `${path}.filename`);
+  if (filename !== basename(filename) || filename === "." || filename === "..") {
+    fail(path, "filename must be a bare file name, not a path");
+  }
+  const sha256 = asString(value.sha256, `${path}.sha256`).toLowerCase();
+  if (!SHA256_RE.test(sha256)) fail(path, "sha256 must be 64 lowercase hex characters");
+  const url = asString(value.url, `${path}.url`);
+  if (!/^https:\/\//.test(url)) fail(path, "url must be an https URL");
+  if (!Array.isArray(value.previews) || value.previews.length === 0) {
+    fail(path, "previews must be a non-empty list");
+  }
+  const note = value.note === undefined ? undefined : asString(value.note, `${path}.note`);
+  return {
+    id: asString(value.id, `${path}.id`),
+    format,
+    filename,
+    url,
+    bytes: asInteger(value.bytes, `${path}.bytes`),
+    sha256,
+    license: asString(value.license, `${path}.license`),
+    source: asString(value.source, `${path}.source`),
+    ...(note ? { note } : {}),
+    previews: value.previews.map((preview, i) => parsePreview(preview, `${path}.previews[${i}]`)),
+  };
+}
+
+function loadManifest(): { formats: string[]; fixtures: Fixture[] } {
+  let raw: string;
+  try {
+    raw = readFileSync(MANIFEST_PATH, "utf8");
+  } catch (err) {
+    throw new Error(`could not read ${MANIFEST_PATH}: ${(err as Error).message}`);
+  }
+
+  let doc: unknown;
+  try {
+    doc = parseYaml(raw);
+  } catch (err) {
+    throw new Error(`${basename(MANIFEST_PATH)}: ${(err as Error).message}`);
+  }
+
+  if (!isPlainObject(doc) || !isPlainObject(doc.formats)) {
+    fail("formats", "must be a mapping of format id → list of fixtures");
+  }
+
+  const formats = Object.keys(doc.formats);
+  if (formats.length === 0) fail("formats", "must list at least one format");
+
+  const fixtures: Fixture[] = [];
+  const seenIds = new Set<string>();
+  for (const format of formats) {
+    if (!/^[a-z][a-z0-9-]*$/.test(format)) {
+      fail(`formats.${format}`, "format id must be lowercase alphanumeric (hyphens allowed)");
+    }
+    const entries = doc.formats[format];
+    if (!Array.isArray(entries)) fail(`formats.${format}`, "must be a list");
+    for (let i = 0; i < entries.length; i++) {
+      const fixture = parseFixture(entries[i], format, `formats.${format}[${i}]`);
+      if (seenIds.has(fixture.id)) fail(`formats.${format}[${i}].id`, `duplicate id "${fixture.id}"`);
+      seenIds.add(fixture.id);
+      fixtures.push(fixture);
+    }
+  }
+
+  return { formats, fixtures };
+}
+
+const manifest = loadManifest();
+
+/** Formats the extractor claims to support. Each must have a working fixture. */
+export const SUPPORTED_FORMATS: readonly string[] = Object.freeze(manifest.formats);
+
+export type FormatId = (typeof SUPPORTED_FORMATS)[number];
+
 /**
- * The manifest. URLs are hardcoded on purpose: fixtures must never silently
- * change under us, so every entry carries an exact size and SHA-256.
+ * The catalog from `fixtures.yaml`. URLs are hardcoded on purpose: fixtures
+ * must never silently change under us, so every entry carries an exact size
+ * and SHA-256.
  */
-export const FIXTURES: Fixture[] = [
-  // ---------------------------------------------------------------- TIFF --
-  {
-    id: "tiff-child-ifd",
-    format: "tiff",
-    filename: "tiff-child-ifd.tiff",
-    url: "https://raw.githubusercontent.com/python-pillow/Pillow/3078cab2618bf70537e5a1e646e156583af93ea3/Tests/images/child_ifd.tiff",
-    bytes: 2971,
-    sha256: "3ee712e0f777574336da10be36a2d09059fc45b4a0d08bd728174d7a4cada76e",
-    license: "HPND (Pillow test images)",
-    source: "python-pillow/Pillow",
-    note: "Tiny TIFF with three JPEG-compressed images: 32x32 in IFD0, then 16x16 and 8x8 as SubIFDs.",
-    previews: [
-      { width: 32, height: 32, bytes: 647, kind: "strips", jpeg: "baseline", decodable: true },
-      { width: 16, height: 16, bytes: 635, kind: "strips", jpeg: "baseline", decodable: true },
-      { width: 8, height: 8, bytes: 635, kind: "strips", jpeg: "baseline", decodable: true },
-    ],
-  },
-  {
-    id: "tiff-old-style-jpeg",
-    format: "tiff",
-    filename: "tiff-old-style-jpeg.tif",
-    url: "https://raw.githubusercontent.com/python-pillow/Pillow/3078cab2618bf70537e5a1e646e156583af93ea3/Tests/images/old-style-jpeg-compression.tif",
-    bytes: 213760,
-    sha256: "058d757030255eb21d4c42bf3ee7b79cb5527f25307cd6c140c0d799c65a817b",
-    license: "HPND (Pillow test images)",
-    source: "python-pillow/Pillow",
-    note: "Large (4160x870) baseline JPEG stored in TIFF strips.",
-    previews: [
-      { width: 4160, height: 870, bytes: 212992, kind: "strips", jpeg: "baseline", decodable: true },
-    ],
-  },
-  {
-    id: "tiff-kodak-dcs520c",
-    format: "tiff",
-    filename: "tiff-kodak-dcs520c.tif",
-    url: "https://raw.pixls.us/data/Kodak/DCS520C/23HK3627.TIF",
-    bytes: 1970973,
-    sha256: "d95e983bea9cf13f356e49b0f59629306bc7a51882ff20766c74ccff5f007d69",
-    license: "CC0 1.0 (Public Domain)",
-    source: "raw.pixls.us — Kodak DCS520C",
-    note:
-      "Real camera TIFF. Its preview is lossless JPEG (SOF3), which standalone " +
-      "JPEG decoders reject — kept as an edge case, not counted as a working preview.",
-    previews: [
-      { width: 1736, height: 1160, bytes: 1697917, kind: "strips", jpeg: "lossless", decodable: false },
-    ],
-  },
-
-  // ----------------------------------------------------------------- DNG --
-  {
-    id: "dng-canon-5d3-lossy",
-    format: "dng",
-    filename: "dng-canon-5d3-lossy.dng",
-    url: "https://raw.pixls.us/data/Adobe%20DNG%20Converter/Canon%20EOS%205D%20Mark%20III/5G4A9394-compressed-lossy.DNG",
-    bytes: 6193902,
-    sha256: "159326856c29073e845c3c5a9ecf98c6474f43ca15798a88ad5e2baecd0664b7",
-    license: "CC0 1.0 (Public Domain)",
-    source: "raw.pixls.us — Adobe DNG Converter, Canon EOS 5D Mark III",
-    note: "Contains three baseline-JPEG previews in nested SubIFDs (256x171, 1024x683, 5760x3840).",
-    previews: [
-      { width: 256, height: 171, bytes: 11034, kind: "strips", jpeg: "baseline", decodable: true },
-      { width: 1024, height: 683, bytes: 49574, kind: "strips", jpeg: "baseline", decodable: true },
-      { width: 5760, height: 3840, bytes: 1235564, kind: "strips", jpeg: "baseline", decodable: true },
-    ],
-  },
-
-  // ----------------------------------------------------------------- CR2 --
-  {
-    id: "cr2-canon-40d",
-    format: "cr2",
-    filename: "cr2-canon-40d.cr2",
-    url: "https://raw.pixls.us/data/Canon/EOS%2040D/_MG_0153.CR2",
-    bytes: 10931826,
-    sha256: "775c806358fedddec7622113a5e399a3330bd5a65e35e37ae1108d8bf58067be",
-    license: "CC0 1.0 (Public Domain)",
-    source: "raw.pixls.us — Canon EOS 40D",
-    note:
-      "CR2 header (IFD0 -> IFD3) plus a JPEGInterchangeFormat thumbnail. " +
-      "The full-size IFD4 preview is lossless JPEG (SOF3).",
-    previews: [
-      { width: 1936, height: 1288, bytes: 365662, kind: "strips", jpeg: "baseline", decodable: true },
-      { width: 160, height: 120, bytes: 8071, kind: "jpeg-interchange-format", jpeg: "baseline", decodable: true },
-      { width: 3888, height: 2592, bytes: 9578955, kind: "strips", jpeg: "lossless", decodable: false },
-    ],
-  },
-];
+export const FIXTURES: Fixture[] = manifest.fixtures;
 
 // --------------------------------------------------------------- helpers --
 
@@ -216,7 +259,6 @@ async function download(url: string, dest: string): Promise<{ bytes: number; sha
   // Write via a temp file so a failed download never leaves a partial fixture.
   const tmp = `${dest}.part`;
   await writeFile(tmp, body);
-  const { rename } = await import("node:fs/promises");
   await rename(tmp, dest);
   return { bytes: total, sha256: hash.digest("hex") };
 }
@@ -327,10 +369,8 @@ async function runDownload(force: boolean): Promise<number> {
   }
 
   console.log(`\nDownloading ${pending.length} fixture(s) into ${FIXTURE_DIR}\n`);
-  let downloaded = 0;
   for (const f of pending) {
     await fetchWithRetry(f);
-    downloaded++;
   }
 
   console.log("\nRunning acceptance check…");
@@ -353,6 +393,8 @@ async function main(): Promise<void> {
     console.log(
       [
         "Usage: node scripts/fixtures.ts [options]",
+        "",
+        "  Catalog: scripts/fixtures.yaml",
         "",
         "  (no options)  download any missing fixtures, then verify",
         "  --force       re-download every fixture",

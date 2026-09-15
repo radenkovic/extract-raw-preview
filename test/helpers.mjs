@@ -1,7 +1,7 @@
 /**
  * Shared test helpers.
  *
- * Expected values come from the fixture manifest (`scripts/fixtures.ts`), which
+ * Expected values come from the fixture catalog (`scripts/fixtures.yaml`), which
  * is the single source of truth for what each sample contains (SPEC §8.3).
  */
 

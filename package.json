@@ -50,6 +50,7 @@
     "fixtures:force": "node scripts/fixtures.ts --force",
     "fixtures:check": "node scripts/fixtures.ts --check",
     "fixtures:list": "node scripts/fixtures.ts --list",
+    "fixtures:thumbs": "npm run build && node scripts/fixtures-thumbs.ts",
     "pretest": "npm run fixtures:check",
     "test": "npm run build && node --test test/",
     "format": "biome format --write .",

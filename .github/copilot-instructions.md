@@ -7,6 +7,7 @@ ESM-only TypeScript library. Node.js 20+. Package manager is **npm**. No runtime
 ```bash
 npm install
 npm run fixtures       # download SHA-pinned samples into test/fixtures/ (gitignored)
+npm run fixtures:thumbs  # extract previews into test/fixtures/thumbs/
 npm run lint           # biome check
 npm run typecheck
 npm test               # fixtures:check + tsc + node --test test/

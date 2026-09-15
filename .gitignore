@@ -3,6 +3,7 @@ dist/
 
 # Test fixtures are downloaded, never committed (raw files are large).
 # Regenerate with: npm run fixtures
+# Extracted previews: npm run fixtures:thumbs → test/fixtures/thumbs/
 test/fixtures/
 
 # Partial/interrupted fixture downloads

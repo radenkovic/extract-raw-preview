@@ -148,6 +148,7 @@ Human mode prints `path  WxH  mimeType  byteLength`. Diagnostics go to stderr, s
 ```bash
 npm install
 npm run fixtures     # download real samples into test/fixtures/ (gitignored)
+npm run fixtures:thumbs  # extract previews into test/fixtures/thumbs/
 npm run lint         # biome format + lint
 npm run typecheck
 npm test             # fixtures:check + build + tests

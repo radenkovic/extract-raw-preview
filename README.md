@@ -1,6 +1,6 @@
 # thumbnail-extractor
 
-Extract the JPEG (or PNG) preview already embedded in TIFF, DNG, and Canon CR2 files. No full decode, no native dependencies, no re-encoding.
+Extract the JPEG (or PNG) preview already embedded in RAW, DNG, TIFF, JPEG, CR3, and PSD files. No full decode, no native dependencies, no re-encoding.
 
 **Pre-alpha.** The API below works and is tested against real camera files, but the package is not on npm yet.
 
@@ -44,7 +44,7 @@ All functions are async.
 | --- | --- |
 | `extractThumbnail(input, options?)` | The best **decodable** preview, or `{ found: false, reason }` |
 | `listThumbnails(input)` | Every candidate, largest first — including non-decodable ones. No `maxBytes` filter. |
-| `detectFormat(input)` | `"tiff" \| "dng" \| "cr2"`, or `undefined`. Reads at most 64 KiB. |
+| `detectFormat(input)` | `"tiff" \| "dng" \| "cr2" \| "jpeg" \| "nef" \| "arw" \| "raf" \| "orf" \| "rw2" \| "pef" \| "cr3" \| "psd"`, or `undefined`. Reads at most 64 KiB. |
 
 `extractThumbnail` options:
 
@@ -107,10 +107,19 @@ try {
 | TIFF | `.tif`, `.tiff` |
 | DNG | `.dng` |
 | Canon RAW 2 | `.cr2` |
+| JPEG | `.jpg`, `.jpeg` |
+| Nikon NEF | `.nef` |
+| Sony ARW | `.arw` |
+| Fujifilm RAF | `.raf` |
+| Olympus ORF | `.orf` |
+| Panasonic RW2 | `.rw2` |
+| Pentax PEF | `.pef` |
+| Canon RAW 3 | `.cr3` |
+| Photoshop | `.psd` |
 
-DNG and CR2 are TIFF containers; all three share one IFD walker.
+TIFF-container RAWs (DNG, CR2, NEF, ARW, PEF, ORF, RW2) share one IFD walker. JPEG reads EXIF IFD1; RAF, CR3, and PSD have their own parsers.
 
-Planned: JPEG (EXIF IFD1), CR3, NEF, ARW, RAF, ORF, RW2, PEF, PSD/PSB, HEIC/HEIF, AVIF. A format ships only once it has a verified fixture with a working preview.
+Planned: PSB, HEIC/HEIF, AVIF. A format ships only once it has a verified fixture with a working preview.
 
 ## CLI
 
@@ -120,7 +129,7 @@ thumbnail-extractor <file> [options]
   -o, --output <path>   Write here (default: <name>.thumb.<ext> next to the source)
   --list                Print all candidates; write nothing
   --json                JSON on stdout (`data` omitted)
-  --format <id>         Force tiff | dng | cr2
+  --format <id>         Force tiff | dng | cr2 | jpeg | nef | arw | raf | orf | rw2 | pef | cr3 | psd
   --prefer <strategy>   largest (default) | smallest
   --max-bytes <n>       Per-candidate cap (default 8388608)
   -h, --help

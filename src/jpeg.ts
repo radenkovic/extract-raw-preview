@@ -139,3 +139,105 @@ export function inspectImage(bytes: Uint8Array): ImageInfo | undefined {
   if (looksLikePng(bytes)) return inspectPng(bytes);
   return undefined;
 }
+
+/**
+ * Byte length of a complete JPEG starting at `bytes[0]`, including the EOI
+ * marker. APP bodies are skipped by their declared length so an EXIF thumbnail
+ * nested in APP1 cannot truncate the outer stream. Returns `undefined` when no
+ * EOI is reachable.
+ */
+export function jpegByteLength(bytes: Uint8Array): number | undefined {
+  if (!looksLikeJpeg(bytes) || bytes.length < 4) return undefined;
+  let i = 2;
+  while (i + 1 < bytes.length) {
+    if (bytes[i] !== 0xff) return undefined;
+    const marker = bytes[i + 1] as number;
+    if (marker === 0xff) {
+      i++;
+      continue;
+    }
+    if (marker === 0xd9) return i + 2;
+    if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+      i += 2;
+      continue;
+    }
+    if (marker === 0xda) {
+      if (i + 3 >= bytes.length) return undefined;
+      const segmentLength = u16be(bytes, i + 2);
+      if (segmentLength < 2) return undefined;
+      i += 2 + segmentLength;
+      while (i + 1 < bytes.length) {
+        if (bytes[i] !== 0xff) {
+          i++;
+          continue;
+        }
+        const scanMarker = bytes[i + 1] as number;
+        if (scanMarker === 0x00 || (scanMarker >= 0xd0 && scanMarker <= 0xd7)) {
+          i += 2;
+          continue;
+        }
+        if (scanMarker === 0xff) {
+          i++;
+          continue;
+        }
+        if (scanMarker === 0xd9) return i + 2;
+        i++;
+      }
+      return undefined;
+    }
+    if (i + 3 >= bytes.length) return undefined;
+    const segmentLength = u16be(bytes, i + 2);
+    if (segmentLength < 2) return undefined;
+    i += 2 + segmentLength;
+  }
+  return undefined;
+}
+
+/** Copy of the JPEG at `offset`, or `undefined` when no complete stream is there. */
+export function extractJpegAt(bytes: Uint8Array, offset: number): Uint8Array | undefined {
+  if (offset < 0 || offset >= bytes.length) return undefined;
+  const length = jpegByteLength(bytes.subarray(offset));
+  if (length === undefined) return undefined;
+  return new Uint8Array(bytes.subarray(offset, offset + length));
+}
+
+/**
+ * TIFF payload of the first APP1 `Exif\0\0` segment, or `undefined`. Offsets
+ * inside the returned bytes are relative to the TIFF header, as EXIF requires.
+ */
+export function findExifTiff(bytes: Uint8Array): Uint8Array | undefined {
+  if (!looksLikeJpeg(bytes)) return undefined;
+  let i = 2;
+  while (i + 3 < bytes.length) {
+    if (bytes[i] !== 0xff) break;
+    const marker = bytes[i + 1] as number;
+    if (marker === 0xff) {
+      i++;
+      continue;
+    }
+    if (marker === 0xda || marker === 0xd9) break;
+    if (marker === 0xd8 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) {
+      i += 2;
+      continue;
+    }
+    const segmentLength = u16be(bytes, i + 2);
+    if (segmentLength < 2) break;
+    const payloadStart = i + 4;
+    const payloadLength = segmentLength - 2;
+    if (
+      marker === 0xe1 &&
+      payloadLength >= 8 &&
+      payloadStart + payloadLength <= bytes.length &&
+      bytes[payloadStart] === 0x45 && // E
+      bytes[payloadStart + 1] === 0x78 && // x
+      bytes[payloadStart + 2] === 0x69 && // i
+      bytes[payloadStart + 3] === 0x66 && // f
+      bytes[payloadStart + 4] === 0x00 &&
+      bytes[payloadStart + 5] === 0x00
+    ) {
+      return bytes.subarray(payloadStart + 6, payloadStart + payloadLength);
+    }
+    i += 2 + segmentLength;
+  }
+  return undefined;
+}

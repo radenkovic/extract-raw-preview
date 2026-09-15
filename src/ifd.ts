@@ -1,9 +1,8 @@
 /**
  * Shared TIFF/IFD walker (SPEC §5.4).
  *
- * TIFF, DNG and CR2 are all TIFF containers, so one parser underpins all three
- * v0.1 formats and most of the roadmap. Format modules configure this walker
- * rather than re-implementing it.
+ * TIFF-container formats (TIFF, DNG, CR2, NEF, ARW, PEF, ORF, RW2) configure
+ * this walker rather than re-implementing it.
  */
 
 import { ExtractError, truncated } from "./errors.js";
@@ -15,6 +14,7 @@ export const Tag = {
   ImageWidth: 0x0100,
   ImageLength: 0x0101,
   Compression: 0x0103,
+  Make: 0x010f,
   PhotometricInterpretation: 0x0106,
   StripOffsets: 0x0111,
   StripByteCounts: 0x0117,
@@ -25,6 +25,17 @@ export const Tag = {
   DNGVersion: 0xc612,
   ExifImageWidth: 0xa002,
   ExifImageHeight: 0xa003,
+} as const;
+
+/** Classic TIFF magic (`42`) plus the TIFF-like RAW variants. */
+export const TiffMagic = {
+  classic: 42,
+  /** Olympus ORF: `MMOR` / `IIRO`. */
+  orf: 0x4f52,
+  /** Olympus ORF: `IIRS`. */
+  orfRs: 0x5352,
+  /** Panasonic RW2: `IIU\0`. */
+  rw2: 0x55,
 } as const;
 
 /** Compression values relevant to embedded previews. */
@@ -84,8 +95,13 @@ function orderName(littleEndian: boolean): string {
   return littleEndian ? "little-endian" : "big-endian";
 }
 
-/** Reads and validates a classic TIFF header, including the CR2 variant. */
-export function readTiffHeader(reader: Reader): TiffHeader {
+export interface TiffHeaderOptions {
+  /** Accepted 16-bit magic values. Defaults to classic TIFF (`42`). */
+  magics?: readonly number[];
+}
+
+/** Reads and validates a TIFF / TIFF-like header, including the CR2 variant. */
+export function readTiffHeader(reader: Reader, options: TiffHeaderOptions = {}): TiffHeader {
   if (!reader.has(0, 8)) {
     throw new ExtractError(
       "ERR_UNRECOGNIZED_FORMAT",
@@ -107,16 +123,18 @@ export function readTiffHeader(reader: Reader): TiffHeader {
     );
   }
 
+  const magics = options.magics ?? [TiffMagic.classic];
   const magic = reader.u16(2, littleEndian);
-  if (magic !== 42) {
+  if (!magics.includes(magic)) {
     throw new ExtractError(
       "ERR_UNRECOGNIZED_FORMAT",
-      `unexpected TIFF magic number ${magic} (expected 42)`,
+      `unexpected TIFF magic number ${magic} (expected ${magics.join(" or ")})`,
     );
   }
 
   const firstIfdOffset = reader.u32(4, littleEndian);
   const cr2 =
+    magic === TiffMagic.classic &&
     littleEndian &&
     reader.has(8, 4) &&
     reader.u8(8) === 0x43 && // C
@@ -205,6 +223,33 @@ export function readUint(
   const entry = findEntry(ifd, tag);
   if (!entry) return undefined;
   return readUintValues(reader, entry, littleEndian)[0];
+}
+
+/**
+ * Reads an ASCII (type 2) tag, stripping trailing NUL bytes. Returns
+ * `undefined` when the tag is absent or unreadable.
+ */
+export function readAscii(reader: Reader, ifd: Ifd, tag: number): string | undefined {
+  const entry = findEntry(ifd, tag);
+  if (!entry) return undefined;
+  if (entry.type !== 2 || entry.count < 1) return undefined;
+  if (!reader.has(entry.valueOffset, entry.count)) return undefined;
+  const bytes = reader.bytes.subarray(entry.valueOffset, entry.valueOffset + entry.count);
+  let end = bytes.length;
+  while (end > 0 && bytes[end - 1] === 0) end--;
+  if (end === 0) return undefined;
+  return new TextDecoder("latin1").decode(bytes.subarray(0, end));
+}
+
+/** IFD0 `Make`, used to tell NEF / ARW / PEF apart from generic TIFF. */
+export function readIfd0Make(reader: Reader): string | undefined {
+  try {
+    const header = readTiffHeader(reader);
+    const ifd = readIfd(reader, header.firstIfdOffset, header.littleEndian);
+    return readAscii(reader, ifd, Tag.Make);
+  } catch {
+    return undefined;
+  }
 }
 
 export interface IfdWalkOptions {

@@ -15,7 +15,8 @@
 #
 # Each preview:
 #   width, height, bytes
-#   kind: strips | jpeg-interchange-format
+#   kind: strips | jpeg-interchange-format | header-jpeg | bmff-jpeg |
+#         psd-resource | panasonic-jpgfromraw
 #   jpeg: baseline | progressive | lossless
 #   decodable: true | false
 
@@ -147,3 +148,192 @@ formats:
           kind: strips
           jpeg: lossless
           decodable: false
+
+  jpeg:
+    - id: jpeg-flower
+      filename: jpeg-flower.jpg
+      url: https://raw.githubusercontent.com/python-pillow/Pillow/3078cab2618bf70537e5a1e646e156583af93ea3/Tests/images/flower.jpg
+      bytes: 32764
+      sha256: 8a9d04b92d0de5836c59ede8ae421235488e4031e893e07b1fe7e4b78f6a9901
+      license: HPND (Pillow test images)
+      source: python-pillow/Pillow
+      note: JPEG with an EXIF IFD1 thumbnail (160x120).
+      previews:
+        - width: 160
+          height: 120
+          bytes: 5448
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+
+  nef:
+    - id: nef-nikon-d70s
+      filename: nef-nikon-d70s.nef
+      url: https://raw.pixls.us/data/Nikon/D70s/RAW_NIKON_D70S.NEF
+      bytes: 5193213
+      sha256: 6c46f9854033e7623ebbb5de8c951df6762ca44f05d45035ccc5cb7e9f4e5692
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Nikon D70s
+      note: NEF with a full-size JPEGInterchangeFormat preview.
+      previews:
+        - width: 3008
+          height: 2000
+          bytes: 717588
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+
+  arw:
+    - id: arw-sony-a7s
+      filename: arw-sony-a7s.arw
+      url: https://raw.pixls.us/data/Sony/ILCE-7S/DSC04126.ARW
+      bytes: 6160384
+      sha256: a35ebb2fbec929daa5beb20d1ce5c15a8aac7b1a7a231455387f3df8a7442e07
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Sony ILCE-7S
+      note: Two JPEGInterchangeFormat previews (preview + thumbnail).
+      previews:
+        - width: 1616
+          height: 1080
+          bytes: 734118
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+        - width: 160
+          height: 120
+          bytes: 8908
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+
+  raf:
+    - id: raf-finepix-s5000
+      filename: raf-finepix-s5000.raf
+      url: https://raw.pixls.us/data/Fujifilm/FinePix%20S5000/2007_0912Image0022.RAF
+      bytes: 6851240
+      sha256: dabd5e74521a6980156be9fd4b88d0c37b0fe4d0e0e6f5c12db8cffff1b76297
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Fujifilm FinePix S5000
+      note: RAF header JPEG preview that itself contains an EXIF thumbnail.
+      previews:
+        - width: 1280
+          height: 960
+          bytes: 489938
+          kind: header-jpeg
+          jpeg: baseline
+          decodable: true
+        - width: 160
+          height: 120
+          bytes: 8390
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+
+  orf:
+    - id: orf-olympus-e10
+      filename: orf-olympus-e10.orf
+      url: https://raw.pixls.us/data/Olympus/E-10/P7198607.ORF
+      bytes: 7614592
+      sha256: 2bfdade72439017a60a47aad1e5bbcb1aca36f2be7a21e94a4257a678fb6f4da
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Olympus E-10
+      note: ORF magic MMOR, IFD1 JPEGInterchangeFormat thumbnail.
+      previews:
+        - width: 160
+          height: 120
+          bytes: 6662
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+
+  rw2:
+    - id: rw2-panasonic-lx7
+      filename: rw2-panasonic-lx7.rw2
+      url: https://raw.pixls.us/data/Panasonic/DMC-LX7/P1020372.RW2
+      bytes: 3249664
+      sha256: d142a23aca836053ed53e9ce3cb3ed2d434541d734d71a94a6eefadcd08bd31b
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Panasonic DMC-LX7
+      note: Panasonic JpgFromRaw JPEG plus its EXIF IFD1 thumbnail.
+      previews:
+        - width: 1920
+          height: 1920
+          bytes: 937604
+          kind: panasonic-jpgfromraw
+          jpeg: baseline
+          decodable: true
+        - width: 160
+          height: 120
+          bytes: 5707
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+
+  pef:
+    - id: pef-pentax-k10d
+      filename: pef-pentax-k10d.pef
+      url: https://raw.pixls.us/data/Pentax/K10D/_IGP7284.PEF
+      bytes: 9561139
+      sha256: e35ae4154a468be3154f5f462e884ba5941f010d3e8f23d347fbec14809f44d3
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Pentax K10D
+      note: Two JPEGInterchangeFormat previews, including a near-full-size JPEG.
+      previews:
+        - width: 3872
+          height: 2592
+          bytes: 1348879
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+        - width: 160
+          height: 120
+          bytes: 6717
+          kind: jpeg-interchange-format
+          jpeg: baseline
+          decodable: true
+
+  cr3:
+    - id: cr3-canon-eos-r6
+      filename: cr3-canon-eos-r6.cr3
+      url: https://raw.pixls.us/data/Canon/EOS%20R6/Canon_EOS_R6_CRAW_ISO_100_crop_nodual.CR3
+      bytes: 5273174
+      sha256: 74abb0a113d075ad9887a058082f40dd2a938c4813a08474d82356f11a027778
+      license: CC0 1.0 (Public Domain)
+      source: raw.pixls.us — Canon EOS R6
+      note: ISO BMFF CR3 with JPEG previews in THMB, a uuid box, and mdat.
+      previews:
+        - width: 3408
+          height: 2272
+          bytes: 962675
+          kind: bmff-jpeg
+          jpeg: baseline
+          decodable: true
+        - width: 1620
+          height: 1080
+          bytes: 389450
+          kind: bmff-jpeg
+          jpeg: baseline
+          decodable: true
+        - width: 160
+          height: 120
+          bytes: 16005
+          kind: bmff-jpeg
+          jpeg: baseline
+          decodable: true
+
+  psd:
+    - id: psd-hopper
+      filename: psd-hopper.psd
+      url: https://raw.githubusercontent.com/python-pillow/Pillow/3078cab2618bf70537e5a1e646e156583af93ea3/Tests/images/hopper.psd
+      bytes: 175119
+      sha256: 108d58d6470f4787e8d16893d965a211efce0b28abdcb11e1b18af8081b96370
+      license: HPND (Pillow test images)
+      source: python-pillow/Pillow
+      note: Photoshop image resource 1036 (128x128 JPEG thumbnail).
+      previews:
+        - width: 128
+          height: 128
+          bytes: 4877
+          kind: psd-resource
+          jpeg: baseline
+          decodable: true

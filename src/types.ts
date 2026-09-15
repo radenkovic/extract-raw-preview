@@ -6,8 +6,20 @@
  * name a format that has no registered extractor.
  */
 
-/** v0.1 formats. Union grows as roadmap formats ship. */
-export type FormatId = "tiff" | "dng" | "cr2";
+/** Supported formats. Union grows as roadmap formats ship. */
+export type FormatId =
+  | "tiff"
+  | "dng"
+  | "cr2"
+  | "jpeg"
+  | "nef"
+  | "arw"
+  | "raf"
+  | "orf"
+  | "rw2"
+  | "pef"
+  | "cr3"
+  | "psd";
 
 /** MIME type of returned preview bytes. */
 export type PreviewMimeType = "image/jpeg" | "image/png";

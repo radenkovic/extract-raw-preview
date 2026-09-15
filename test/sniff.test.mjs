@@ -43,9 +43,29 @@ test("rejects a TIFF byte-order mark with the wrong magic number", async () => {
   assert.equal(await detectFormat(hex("49492b000800000000000000")), undefined);
 });
 
+test("detects JPEG, PSD, RAF, CR3, ORF and RW2 by magic bytes", async () => {
+  assert.equal(await detectFormat(hex("ffd8ffe00010")), "jpeg");
+  assert.equal(await detectFormat(hex("384250530001")), "psd"); // 8BPS
+  assert.equal(await detectFormat(hex("4d4d4f5200000008")), "orf"); // MMOR
+  assert.equal(await detectFormat(hex("4949550008000000")), "rw2"); // IIU\0
+  const raf = new Uint8Array(16);
+  raf.set(Buffer.from("FUJIFILMCCD-RAW "));
+  assert.equal(await detectFormat(raf), "raf");
+  assert.equal(await detectFormat(hex("00000010667479706372782000000000")), "cr3");
+});
+
 test("sniffs real fixtures without needing the whole file", async () => {
   assert.equal(await detectFormat(fixturePath("tiff-child-ifd")), "tiff");
   assert.equal(await detectFormat(fixturePath("dng-canon-5d3-lossy")), "dng");
   // 10.4 MiB file: detection still only reads the head.
   assert.equal(await detectFormat(fixturePath("cr2-canon-40d")), "cr2");
+  assert.equal(await detectFormat(fixturePath("jpeg-flower")), "jpeg");
+  assert.equal(await detectFormat(fixturePath("nef-nikon-d70s")), "nef");
+  assert.equal(await detectFormat(fixturePath("arw-sony-a7s")), "arw");
+  assert.equal(await detectFormat(fixturePath("raf-finepix-s5000")), "raf");
+  assert.equal(await detectFormat(fixturePath("orf-olympus-e10")), "orf");
+  assert.equal(await detectFormat(fixturePath("rw2-panasonic-lx7")), "rw2");
+  assert.equal(await detectFormat(fixturePath("pef-pentax-k10d")), "pef");
+  assert.equal(await detectFormat(fixturePath("cr3-canon-eos-r6")), "cr3");
+  assert.equal(await detectFormat(fixturePath("psd-hopper")), "psd");
 });

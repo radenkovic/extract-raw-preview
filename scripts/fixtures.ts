@@ -33,7 +33,13 @@ const MANIFEST_PATH = join(HERE, "fixtures.yaml");
 /** How an embedded preview is encoded. `lossless` previews are not viewable. */
 type JpegKind = "baseline" | "progressive" | "lossless";
 
-type PreviewKind = "strips" | "jpeg-interchange-format";
+type PreviewKind =
+  | "strips"
+  | "jpeg-interchange-format"
+  | "header-jpeg"
+  | "bmff-jpeg"
+  | "psd-resource"
+  | "panasonic-jpgfromraw";
 
 export interface PreviewExpectation {
   width: number;
@@ -61,7 +67,14 @@ export interface Fixture {
 }
 
 const JPEG_KINDS = new Set<JpegKind>(["baseline", "progressive", "lossless"]);
-const PREVIEW_KINDS = new Set<PreviewKind>(["strips", "jpeg-interchange-format"]);
+const PREVIEW_KINDS = new Set<PreviewKind>([
+  "strips",
+  "jpeg-interchange-format",
+  "header-jpeg",
+  "bmff-jpeg",
+  "psd-resource",
+  "panasonic-jpgfromraw",
+]);
 const SHA256_RE = /^[0-9a-f]{64}$/;
 
 function fail(path: string, message: string): never {

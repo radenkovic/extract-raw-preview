@@ -1,0 +1,20 @@
+/**
+ * Pentax PEF extractor (SPEC §6).
+ *
+ * PEF is a TIFF container. Preview JPEGs are stored as
+ * `JPEGInterchangeFormat` blobs on later IFDs.
+ */
+
+import { Tag } from "../ifd.js";
+import type { Reader } from "../reader.js";
+import { sniffFormat } from "../sniff.js";
+import type { ThumbnailCandidate } from "../types.js";
+import { extractTiffPreviews } from "./shared.js";
+
+export function matches(bytes: Uint8Array): boolean {
+  return sniffFormat(bytes) === "pef";
+}
+
+export async function extract(reader: Reader): Promise<ThumbnailCandidate[]> {
+  return extractTiffPreviews(reader, { pointerTags: [Tag.SubIFDs] });
+}

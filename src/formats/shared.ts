@@ -16,8 +16,8 @@ import {
   Tag,
   walkIfds,
 } from "../ifd.js";
-import { type ImageInfo, inspectImage } from "../jpeg.js";
-import type { Reader } from "../reader.js";
+import { findExifTiff, type ImageInfo, inspectImage } from "../jpeg.js";
+import { Reader } from "../reader.js";
 import type { ThumbnailCandidate } from "../types.js";
 
 export interface PreviewExtractionOptions {
@@ -29,6 +29,8 @@ export interface PreviewExtractionOptions {
   pointerTags?: readonly number[];
   /** Extra IFD seeds beyond the container header's first IFD. */
   extraSeeds?: readonly number[];
+  /** Accepted TIFF magic numbers. Defaults to classic TIFF (`42`). */
+  magics?: readonly number[];
 }
 
 export function isJpegCompression(compression: number | undefined): boolean {
@@ -89,6 +91,46 @@ function buildCandidate(
     decodable: info.decodable,
     kind: info.kind,
   };
+}
+
+/** Wraps a standalone JPEG/PNG buffer as a candidate when it has a frame header. */
+export function candidateFromImageBytes(data: Uint8Array): ThumbnailCandidate | undefined {
+  const info = inspectImage(data);
+  if (!info || info.width <= 0 || info.height <= 0) return undefined;
+  return {
+    data,
+    mimeType: info.mimeType,
+    width: info.width,
+    height: info.height,
+    byteLength: data.byteLength,
+    origin: info.mimeType === "image/png" ? "embedded-png" : "embedded-jpeg",
+    decodable: info.decodable,
+    kind: info.kind,
+  };
+}
+
+/**
+ * EXIF IFD1 (and any other JPEG-bearing IFD) nested in a JPEG's APP1 segment.
+ * Used by the JPEG extractor and by RAF/RW2, whose previews are themselves JPEGs
+ * that often carry a smaller thumbnail.
+ */
+export function extractJpegExifPreviews(jpeg: Uint8Array): ThumbnailCandidate[] {
+  const tiff = findExifTiff(jpeg);
+  if (!tiff || tiff.length < 8) return [];
+  return extractTiffPreviews(new Reader(tiff));
+}
+
+/** Drops duplicates that share dimensions and byte length. */
+export function uniqueCandidates(candidates: readonly ThumbnailCandidate[]): ThumbnailCandidate[] {
+  const seen = new Set<string>();
+  const out: ThumbnailCandidate[] = [];
+  for (const candidate of candidates) {
+    const key = `${candidate.width}x${candidate.height}:${candidate.byteLength}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(candidate);
+  }
+  return out;
 }
 
 /**
@@ -156,7 +198,7 @@ export function extractTiffPreviews(
   reader: Reader,
   options: PreviewExtractionOptions = {},
 ): ThumbnailCandidate[] {
-  const header = readTiffHeader(reader);
+  const header = readTiffHeader(reader, { magics: options.magics });
   const pointerTags = options.pointerTags ?? [Tag.SubIFDs];
 
   // CR2 records the raw IFD in its canonical header as well as in the chain.

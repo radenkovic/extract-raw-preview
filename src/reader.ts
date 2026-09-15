@@ -80,11 +80,7 @@ export class Reader {
   }
 
   #dataView(): DataView {
-    this.#view ??= new DataView(
-      this.bytes.buffer,
-      this.bytes.byteOffset,
-      this.bytes.byteLength,
-    );
+    this.#view ??= new DataView(this.bytes.buffer, this.bytes.byteOffset, this.bytes.byteLength);
     return this.#view;
   }
 

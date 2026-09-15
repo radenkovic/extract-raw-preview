@@ -20,10 +20,10 @@
  */
 
 import { createHash } from "node:crypto";
-import { mkdir, readFile, stat, writeFile, unlink, rename } from "node:fs/promises";
 import { readFileSync } from "node:fs";
-import { fileURLToPath } from "node:url";
+import { mkdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
 import { basename, dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { parse as parseYaml } from "yaml";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -171,7 +171,8 @@ function loadManifest(): { formats: string[]; fixtures: Fixture[] } {
     if (!Array.isArray(entries)) fail(`formats.${format}`, "must be a list");
     for (let i = 0; i < entries.length; i++) {
       const fixture = parseFixture(entries[i], format, `formats.${format}[${i}]`);
-      if (seenIds.has(fixture.id)) fail(`formats.${format}[${i}].id`, `duplicate id "${fixture.id}"`);
+      if (seenIds.has(fixture.id))
+        fail(`formats.${format}[${i}].id`, `duplicate id "${fixture.id}"`);
       seenIds.add(fixture.id);
       fixtures.push(fixture);
     }
@@ -222,9 +223,7 @@ async function sizeOf(path: string): Promise<number | undefined> {
 }
 
 /** Verifies an on-disk file against a manifest entry. */
-async function verify(
-  f: Fixture,
-): Promise<{ ok: true } | { ok: false; reason: string }> {
+async function verify(f: Fixture): Promise<{ ok: true } | { ok: false; reason: string }> {
   const path = join(FIXTURE_DIR, f.filename);
   const size = await sizeOf(path);
   if (size === undefined) return { ok: false, reason: "missing" };
@@ -233,7 +232,10 @@ async function verify(
   }
   const actual = await sha256File(path);
   if (actual !== f.sha256) {
-    return { ok: false, reason: `sha256 mismatch (expected ${f.sha256.slice(0, 12)}…, found ${actual.slice(0, 12)}…)` };
+    return {
+      ok: false,
+      reason: `sha256 mismatch (expected ${f.sha256.slice(0, 12)}…, found ${actual.slice(0, 12)}…)`,
+    };
   }
   return { ok: true };
 }

@@ -2,12 +2,12 @@
 
 import assert from "node:assert/strict";
 import { execFile } from "node:child_process";
-import { access, copyFile, mkdir, mkdtemp, readFile, readdir, rm } from "node:fs/promises";
+import { access, copyFile, mkdir, mkdtemp, readdir, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { basename, join } from "node:path";
 import test, { after, before } from "node:test";
-import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import { promisify } from "node:util";
 
 import { extractThumbnail } from "../dist/index.js";
 import { fixturePath, minimalTiffWithoutPreviews } from "./helpers.mjs";
@@ -167,10 +167,7 @@ test("--json emits a single parseable value with outputPath and no data", async 
 });
 
 test("a found:false result is still valid JSON on stdout and exits 0", async () => {
-  const { code, stdout, stderr } = await cli([
-    fixturePath("tiff-kodak-dcs520c"),
-    "--json",
-  ]);
+  const { code, stdout, stderr } = await cli([fixturePath("tiff-kodak-dcs520c"), "--json"]);
 
   assert.equal(code, 0);
   assert.equal(stderr, "");
@@ -217,7 +214,10 @@ test("--list --json emits an array of candidates without data", async () => {
     payload.map((candidate) => `${candidate.width}x${candidate.height}`),
     ["3888x2592", "1936x1288", "160x120"],
   );
-  assert.equal(payload.every((candidate) => !("data" in candidate)), true);
+  assert.equal(
+    payload.every((candidate) => !("data" in candidate)),
+    true,
+  );
 });
 
 test("--list on a container with no previews prints [] and exits 0", async () => {
@@ -242,12 +242,7 @@ test("--prefer smallest selects the smallest candidate", async () => {
 });
 
 test("--max-bytes that excludes everything reports all candidates exceed maxBytes", async () => {
-  const { code, stdout } = await cli([
-    fixturePath("tiff-child-ifd"),
-    "--max-bytes",
-    "0",
-    "--json",
-  ]);
+  const { code, stdout } = await cli([fixturePath("tiff-child-ifd"), "--max-bytes", "0", "--json"]);
   assert.equal(code, 0);
   const payload = JSON.parse(stdout);
   assert.equal(payload.found, false);
@@ -275,9 +270,7 @@ test("operational errors under --json still produce parseable stdout", async () 
 });
 
 test("the binary is declared in package.json", async () => {
-  const pkg = JSON.parse(
-    await readFile(new URL("../package.json", import.meta.url), "utf8"),
-  );
+  const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
   assert.equal(pkg.bin["thumbnail-extractor"], "./dist/cli.js");
   assert.equal(basename(CLI), "cli.js");
 });

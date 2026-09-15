@@ -154,7 +154,10 @@ test("listThumbnails ignores maxBytes entirely", async () => {
 test("listThumbnails sorts by pixel count descending and keeps non-decodable entries", async () => {
   const candidates = await listThumbnails(fixturePath("cr2-canon-40d"));
   const pixels = candidates.map((candidate) => candidate.width * candidate.height);
-  assert.deepEqual(pixels, [...pixels].sort((a, b) => b - a));
+  assert.deepEqual(
+    pixels,
+    [...pixels].sort((a, b) => b - a),
+  );
   assert.ok(candidates.some((candidate) => candidate.decodable === false));
 });
 

@@ -45,7 +45,8 @@ test("dng-canon-5d3-lossy: 34892 JPEG XL sub-images are not previews", async () 
   // SubIFD0 of this file is compression 34892 (JPEG XL), which v0.1 ignores.
   const candidates = await listThumbnails(fixturePath("dng-canon-5d3-lossy"));
   const isJpegXl = candidates.some(
-    (candidate) => candidate.width === 5760 && candidate.height === 3840 && candidate.byteLength === 0,
+    (candidate) =>
+      candidate.width === 5760 && candidate.height === 3840 && candidate.byteLength === 0,
   );
   assert.equal(isJpegXl, false);
   assert.equal(candidates.length, 3);

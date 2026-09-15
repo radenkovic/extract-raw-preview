@@ -6,7 +6,7 @@
  * reject with an `ExtractError` carrying a `code` (SPEC §4.3).
  */
 
-import { open, readFile } from "node:fs/promises";
+import { type FileHandle, open, readFile } from "node:fs/promises";
 import { resolve as resolvePath } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -15,15 +15,20 @@ import { Reader } from "./reader.js";
 import { getExtractor } from "./registry.js";
 import { SNIFF_BYTES, sniffFormat } from "./sniff.js";
 import {
-  toThumbnail,
   type ExtractInput,
   type ExtractOptions,
   type ExtractResult,
   type FormatId,
   type Thumbnail,
   type ThumbnailCandidate,
+  toThumbnail,
 } from "./types.js";
 
+export type { ExtractErrorCode } from "./errors.js";
+export { ExtractError, isExtractError } from "./errors.js";
+export { Reader } from "./reader.js";
+export { supportedFormats } from "./registry.js";
+export { SNIFF_BYTES } from "./sniff.js";
 export type {
   ExtractInput,
   ExtractOptions,
@@ -33,11 +38,6 @@ export type {
   Thumbnail,
   ThumbnailOrigin,
 } from "./types.js";
-export type { ExtractErrorCode } from "./errors.js";
-export { ExtractError, isExtractError } from "./errors.js";
-export { Reader } from "./reader.js";
-export { supportedFormats } from "./registry.js";
-export { SNIFF_BYTES } from "./sniff.js";
 
 /** Per-candidate byte cap default (SPEC §4.2). */
 export const DEFAULT_MAX_BYTES = 8 * 1024 * 1024;
@@ -81,10 +81,7 @@ async function resolveBytes(input: ExtractInput): Promise<Uint8Array> {
   if (isByteInput(input)) return input;
   if (typeof input === "string") return readFileBytes(resolvePath(input));
   if (input instanceof URL) return readFileBytes(pathFromUrl(input));
-  throw new ExtractError(
-    "ERR_IO",
-    "input must be a filesystem path, a file: URL, or a Uint8Array",
-  );
+  throw new ExtractError("ERR_IO", "input must be a filesystem path, a file: URL, or a Uint8Array");
 }
 
 /** Resolves input to at most the first 64 KiB, for sniffing only (SPEC §4.1). */
@@ -94,7 +91,7 @@ async function resolveSniffBytes(input: ExtractInput): Promise<Uint8Array> {
   }
 
   const path = typeof input === "string" ? resolvePath(input) : pathFromUrl(input);
-  let handle;
+  let handle: FileHandle;
   try {
     handle = await open(path, "r");
   } catch (error) {
@@ -112,10 +109,7 @@ async function resolveSniffBytes(input: ExtractInput): Promise<Uint8Array> {
   }
 }
 
-async function runExtractor(
-  format: FormatId,
-  bytes: Uint8Array,
-): Promise<ThumbnailCandidate[]> {
+async function runExtractor(format: FormatId, bytes: Uint8Array): Promise<ThumbnailCandidate[]> {
   const extractor = getExtractor(format);
   if (!extractor) {
     throw new ExtractError(
@@ -152,10 +146,7 @@ export async function listThumbnails(input: ExtractInput): Promise<Thumbnail[]> 
   const bytes = await resolveBytes(input);
   const format = sniffFormat(bytes);
   if (!format) {
-    throw new ExtractError(
-      "ERR_UNRECOGNIZED_FORMAT",
-      "input matched no known image signature",
-    );
+    throw new ExtractError("ERR_UNRECOGNIZED_FORMAT", "input matched no known image signature");
   }
   const candidates = await runExtractor(format, bytes);
   return candidates.sort(byLargest).map(toThumbnail);
@@ -174,7 +165,11 @@ function select(
   // Precedence (SPEC §4.2 step 5): none present > all non-decodable > all over cap.
   if (!candidates.some((candidate) => candidate.decodable)) {
     const onlyLossless = candidates.every((candidate) => candidate.kind === "lossless-jpeg");
-    return { found: false, format, reason: onlyLossless ? REASON.losslessOnly : REASON.undecodable };
+    return {
+      found: false,
+      format,
+      reason: onlyLossless ? REASON.losslessOnly : REASON.undecodable,
+    };
   }
 
   const eligible = candidates.filter(
@@ -215,10 +210,7 @@ export async function extractThumbnail(
   const bytes = await resolveBytes(input);
   const format = options.format ?? sniffFormat(bytes);
   if (!format) {
-    throw new ExtractError(
-      "ERR_UNRECOGNIZED_FORMAT",
-      "input matched no known image signature",
-    );
+    throw new ExtractError("ERR_UNRECOGNIZED_FORMAT", "input matched no known image signature");
   }
 
   return select(format, await runExtractor(format, bytes), maxBytes, prefer);

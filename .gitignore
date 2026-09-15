@@ -19,6 +19,9 @@ pnpm-debug.log*
 .vscode/*
 !.vscode/extensions.json
 
+# Local git worktrees
+.worktrees/
+
 # Coverage
 coverage/
 *.tsbuildinfo

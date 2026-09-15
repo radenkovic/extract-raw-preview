@@ -7,16 +7,16 @@
 
 import {
   Compression,
-  Tag,
   findEntry,
+  type Ifd,
   readExifImageSize,
   readTiffHeader,
   readUint,
   readUintValues,
+  Tag,
   walkIfds,
-  type Ifd,
 } from "../ifd.js";
-import { inspectImage, type ImageInfo } from "../jpeg.js";
+import { type ImageInfo, inspectImage } from "../jpeg.js";
 import type { Reader } from "../reader.js";
 import type { ThumbnailCandidate } from "../types.js";
 

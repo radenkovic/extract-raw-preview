@@ -176,11 +176,7 @@ export function findEntry(ifd: Ifd, tag: number): IfdEntry | undefined {
  * Reads an entry's values as unsigned integers. Returns `[]` when the value is
  * unreadable: callers treat that as "structure absent" (SPEC §5.2).
  */
-export function readUintValues(
-  reader: Reader,
-  entry: IfdEntry,
-  littleEndian: boolean,
-): number[] {
+export function readUintValues(reader: Reader, entry: IfdEntry, littleEndian: boolean): number[] {
   const { count, type, valueOffset } = entry;
   if (count <= 0 || count > 0xffff) return [];
 

@@ -131,7 +131,9 @@ async function runList(file: string, options: CliOptions): Promise<number> {
     print(JSON.stringify(candidates.map(withoutData)));
   } else {
     for (const candidate of candidates) {
-      print(`${file}  ${candidate.width}x${candidate.height}  ${candidate.mimeType}  ${candidate.byteLength}`);
+      print(
+        `${file}  ${candidate.width}x${candidate.height}  ${candidate.mimeType}  ${candidate.byteLength}`,
+      );
     }
   }
   return 0;
@@ -157,16 +159,15 @@ async function runExtract(file: string, options: CliOptions): Promise<number> {
   try {
     await writeFile(outputPath, result.data);
   } catch (error) {
-    throw new ExtractError(
-      "ERR_IO",
-      `could not write ${outputPath}: ${(error as Error).message}`,
-    );
+    throw new ExtractError("ERR_IO", `could not write ${outputPath}: ${(error as Error).message}`);
   }
 
   if (options.json) {
     print(JSON.stringify({ ...withoutData(result), outputPath }));
   } else {
-    print(`${outputPath}  ${result.width}x${result.height}  ${result.mimeType}  ${result.byteLength}`);
+    print(
+      `${outputPath}  ${result.width}x${result.height}  ${result.mimeType}  ${result.byteLength}`,
+    );
   }
   return 0;
 }

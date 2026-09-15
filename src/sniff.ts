@@ -5,7 +5,7 @@
  * including the DNG version tag, which lives in IFD0 near the front of the file.
  */
 
-import { Tag, findEntry, readIfd, readTiffHeader } from "./ifd.js";
+import { findEntry, readIfd, readTiffHeader, Tag } from "./ifd.js";
 import { Reader } from "./reader.js";
 import type { FormatId } from "./types.js";
 

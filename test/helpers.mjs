@@ -60,9 +60,6 @@ export function assertCandidatesMatch(actual, entry) {
 
 /** A structurally valid TIFF with an empty IFD0 and therefore no previews. */
 export function minimalTiffWithoutPreviews() {
-  return Buffer.from([
-    0x49, 0x49, 0x2a, 0x00, 0x08, 0x00, 0x00, 0x00, // II*\0, IFD0 at offset 8
-    0x00, 0x00, // 0 entries
-    0x00, 0x00, 0x00, 0x00, // next IFD offset = 0
-  ]);
+  // II*\0, IFD0 at offset 8, 0 entries, next IFD offset = 0
+  return Buffer.from("49492a0008000000000000000000", "hex");
 }

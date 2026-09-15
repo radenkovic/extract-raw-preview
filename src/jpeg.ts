@@ -114,8 +114,16 @@ export function inspectPng(bytes: Uint8Array): ImageInfo {
   if (!hasIhdr) {
     return { mimeType: "image/png", kind: "png", width: 0, height: 0, decodable: false };
   }
-  const width = ((bytes[16] as number) << 24) | ((bytes[17] as number) << 16) | ((bytes[18] as number) << 8) | (bytes[19] as number);
-  const height = ((bytes[20] as number) << 24) | ((bytes[21] as number) << 16) | ((bytes[22] as number) << 8) | (bytes[23] as number);
+  const width =
+    ((bytes[16] as number) << 24) |
+    ((bytes[17] as number) << 16) |
+    ((bytes[18] as number) << 8) |
+    (bytes[19] as number);
+  const height =
+    ((bytes[20] as number) << 24) |
+    ((bytes[21] as number) << 16) |
+    ((bytes[22] as number) << 8) |
+    (bytes[23] as number);
   return {
     mimeType: "image/png",
     kind: "png",

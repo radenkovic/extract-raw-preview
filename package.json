@@ -45,10 +45,14 @@
     "fixtures:list": "node scripts/fixtures.ts --list",
     "pretest": "pnpm run fixtures:check",
     "test": "pnpm run build && node --test test/",
-    "check": "pnpm run typecheck && pnpm test",
+    "format": "biome format --write .",
+    "lint": "biome check .",
+    "lint:fix": "biome check --write .",
+    "check": "pnpm run lint && pnpm run typecheck && pnpm test",
     "clean": "rm -rf dist"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.13",
     "@types/node": "^24.0.0",
     "typescript": "^5.9.0",
     "yaml": "^2.9.1"

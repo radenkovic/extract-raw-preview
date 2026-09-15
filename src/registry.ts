@@ -4,11 +4,11 @@
  * Registering a format = one new file in `formats/` plus one line here.
  */
 
-import type { Reader } from "./reader.js";
-import type { FormatId, ThumbnailCandidate } from "./types.js";
 import * as cr2 from "./formats/cr2.js";
 import * as dng from "./formats/dng.js";
 import * as tiff from "./formats/tiff.js";
+import type { Reader } from "./reader.js";
+import type { FormatId, ThumbnailCandidate } from "./types.js";
 
 export interface Extractor {
   matches(bytes: Uint8Array): boolean;
@@ -23,17 +23,11 @@ export const registry: Readonly<Record<FormatId, Extractor>> = {
 
 /** Returns the extractor for `id`, or `undefined` when none is registered. */
 export function getExtractor(id: FormatId): Extractor | undefined {
-  return Object.prototype.hasOwnProperty.call(registry, id)
-    ? registry[id as FormatId]
-    : undefined;
+  return Object.hasOwn(registry, id) ? registry[id as FormatId] : undefined;
 }
 
 export function isFormatId(value: string): value is FormatId {
-  return Object.prototype.hasOwnProperty.call(registry, value);
+  return Object.hasOwn(registry, value);
 }
 
-export const supportedFormats: readonly FormatId[] = Object.freeze([
-  "tiff",
-  "dng",
-  "cr2",
-] as const);
+export const supportedFormats: readonly FormatId[] = Object.freeze(["tiff", "dng", "cr2"] as const);

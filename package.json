@@ -1,0 +1,54 @@
+{
+  "name": "thumbnail-extractor",
+  "version": "0.1.0",
+  "description": "Extract embedded thumbnails and previews from exotic image formats (RAW, DNG, CR2, TIFF, and more).",
+  "type": "module",
+  "license": "ISC",
+  "packageManager": "pnpm@12.4.2",
+  "engines": {
+    "node": ">=20"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "bin": {
+    "thumbnail-extractor": "./dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "keywords": [
+    "thumbnail",
+    "preview",
+    "raw",
+    "dng",
+    "cr2",
+    "tiff",
+    "exif",
+    "image",
+    "metadata",
+    "extract"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "fixtures": "node scripts/fixtures.ts",
+    "fixtures:force": "node scripts/fixtures.ts --force",
+    "fixtures:check": "node scripts/fixtures.ts --check",
+    "fixtures:list": "node scripts/fixtures.ts --list",
+    "pretest": "pnpm run fixtures:check",
+    "test": "pnpm run build && node --test test/",
+    "check": "pnpm run typecheck && pnpm test",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.9.0"
+  }
+}

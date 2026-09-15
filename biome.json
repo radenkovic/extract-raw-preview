@@ -7,7 +7,7 @@
   },
   "files": {
     "ignoreUnknown": true,
-    "includes": ["**", "!**/package-lock.json", "!**/pnpm-lock.yaml"]
+    "includes": ["**", "!**/package-lock.json"]
   },
   "formatter": {
     "enabled": true,

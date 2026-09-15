@@ -4,7 +4,6 @@
   "description": "Extract embedded thumbnails and previews from exotic image formats (RAW, DNG, CR2, TIFF, and more).",
   "type": "module",
   "license": "MIT",
-  "packageManager": "pnpm@12.4.2",
   "engines": {
     "node": ">=20"
   },
@@ -51,12 +50,12 @@
     "fixtures:force": "node scripts/fixtures.ts --force",
     "fixtures:check": "node scripts/fixtures.ts --check",
     "fixtures:list": "node scripts/fixtures.ts --list",
-    "pretest": "pnpm run fixtures:check",
-    "test": "pnpm run build && node --test test/",
+    "pretest": "npm run fixtures:check",
+    "test": "npm run build && node --test test/",
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
-    "check": "pnpm run lint && pnpm run typecheck && pnpm test",
+    "check": "npm run lint && npm run typecheck && npm test",
     "clean": "rm -rf dist"
   },
   "devDependencies": {

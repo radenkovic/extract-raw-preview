@@ -7,7 +7,7 @@
 # Add a format:
 #   1. Add a key under `formats` (an empty list is enough to start).
 #   2. Append at least one sample with a `decodable: true` preview.
-#   3. `pnpm fixtures` downloads it; `pnpm fixtures:check` enforces the gate.
+#   3. `npm run fixtures` downloads it; `npm run fixtures:check` enforces the gate.
 #
 # Add a sample: append a mapping under that format. Required fields:
 #   id, filename, url, bytes, sha256, license, source, previews

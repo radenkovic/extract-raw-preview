@@ -1,0 +1,70 @@
+name: Add a format
+description: Ship an extractor plus a SHA-pinned, redistributable fixture
+title: "Add <format> extractor"
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A format ships only once it has a verified fixture with a working (decodable) preview.
+        Samples must be CC0, public domain, or another permissive test-suite license.
+
+        Assign this issue to Copilot if you want a PR. Custom instructions live in `.github/copilot-instructions.md`.
+
+  - type: input
+    id: format-id
+    attributes:
+      label: Format id
+      description: Lowercase id for `FormatId`, `src/formats/<id>.ts`, the registry, and `--format`.
+      placeholder: heic
+    validations:
+      required: true
+
+  - type: input
+    id: extensions
+    attributes:
+      label: Extensions
+      description: File extensions this format uses.
+      placeholder: .heic, .heif
+    validations:
+      required: true
+
+  - type: textarea
+    id: detection
+    attributes:
+      label: How to detect it
+      description: Magic bytes, box brands, TIFF Make, or other sniffing hints. Point at a spec or a known-good file if you can.
+      placeholder: ftyp brand mif1 / heic; HEIF box layout for the preview item
+    validations:
+      required: true
+
+  - type: input
+    id: fixture-url
+    attributes:
+      label: Fixture URL
+      description: Direct download of one redistributable sample that contains a decodable JPEG or PNG preview.
+    validations:
+      required: true
+
+  - type: input
+    id: fixture-license
+    attributes:
+      label: Fixture license
+      placeholder: CC0 1.0
+    validations:
+      required: true
+
+  - type: input
+    id: fixture-source
+    attributes:
+      label: Fixture source
+      description: Upstream project or camera sample archive.
+      placeholder: raw.pixls.us — …
+    validations:
+      required: true
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Extra notes
+      description: Where the preview lives (EXIF IFD1, THMB box, SubIFD, …), known lossless-only cameras, anything an agent should not invent.

@@ -1,15 +1,20 @@
 # extract-raw-preview
 
-Copy the JPEG or PNG preview already stored inside a camera RAW or image file — without decoding pixels, re-encoding, or depending on a native RAW decoder.
+[![npm version](https://img.shields.io/npm/v/extract-raw-preview)](https://www.npmjs.com/package/extract-raw-preview)
+[![CI](https://github.com/radenkovic/extract-raw-preview/actions/workflows/ci.yml/badge.svg)](https://github.com/radenkovic/extract-raw-preview/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
+[![Node.js](https://img.shields.io/node/v/extract-raw-preview)](https://nodejs.org)
 
-Cameras and editors embed a displayable preview so you can show a thumbnail without interpreting mosaiced sensor data or a Photoshop document. This library finds those stored bytes and returns them as they appear in the container. The same code runs in Node.js (a path, a `file:` URL, or bytes) and in the browser (`Uint8Array` only).
+Extract embedded JPEG and PNG previews from camera RAW files — Canon CR2/CR3, Nikon NEF, Sony ARW, Fujifilm RAF, Adobe DNG, Olympus ORF, Panasonic RW2, Pentax PEF — plus TIFF, JPEG EXIF thumbnails, and Photoshop PSD/PSB.
+
+Cameras and editors store a displayable preview so you can show a thumbnail without decoding mosaiced sensor data. This library copies those stored bytes as they appear in the container. No pixel decode, no re-encode, no native RAW decoder, no runtime dependencies. Same API in **Node.js 20+** (a path, a `file:` URL, or bytes) and in the **browser** (`Uint8Array` only). ESM only.
+
+Unlike ExifTool-based tools, it walks the container itself (TIFF IFDs, CR3 BMFF, RAF header, PSD image resources), so it also runs in the browser.
 
 It currently extracts previews from:
 
 - **TIFF-family RAW** — Adobe DNG, Canon CR2, Nikon NEF, Sony ARW, Olympus ORF, Panasonic RW2, Pentax PEF, and generic TIFF
 - **Other containers** — Fujifilm RAF, Canon CR3, JPEG (EXIF thumbnail), Photoshop PSD and PSB
-
-Requires **Node.js 20+** for the CLI and path-based API. ESM only. No runtime dependencies.
 
 ```bash
 npm install extract-raw-preview
@@ -175,4 +180,4 @@ To add a format: one file in `src/formats/`, one line in `src/registry.ts`, and 
 
 ## License
 
-[MIT](LICENSE.md).
+[MIT](LICENSE.md) © [Dan Radenkovic](https://radenkovic.org)

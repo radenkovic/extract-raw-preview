@@ -1,12 +1,27 @@
 {
   "name": "extract-raw-preview",
   "version": "0.1.0",
-  "description": "Extract embedded JPEG/PNG thumbnails from RAW, DNG, TIFF, JPEG, CR3, PSD, and PSB files.",
+  "description": "Extract embedded JPEG/PNG previews from camera RAW files (CR2, CR3, NEF, ARW, RAF, DNG, ORF, RW2, PEF), TIFF, JPEG EXIF thumbnails, and Photoshop PSD/PSB. Pure JavaScript — Node.js and browser, no native decoder.",
   "type": "module",
   "license": "MIT",
+  "author": {
+    "name": "Dan Radenkovic",
+    "email": "dan@radenkovic.org",
+    "url": "https://radenkovic.org"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/radenkovic/extract-raw-preview.git"
+  },
+  "bugs": {
+    "url": "https://github.com/radenkovic/extract-raw-preview/issues",
+    "email": "dan@radenkovic.org"
+  },
+  "homepage": "https://github.com/radenkovic/extract-raw-preview#readme",
   "engines": {
     "node": ">=20"
   },
+  "sideEffects": false,
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "browser": "./dist/browser.js",
@@ -29,29 +44,51 @@
   "files": [
     "dist",
     "README.md",
-    "LICENSE.md"
+    "LICENSE.md",
+    "CHANGELOG.md"
   ],
   "keywords": [
+    "raw",
     "thumbnail",
     "preview",
-    "raw",
-    "dng",
+    "extract",
+    "jpeg",
+    "jpg",
+    "png",
+    "camera",
+    "photography",
+    "dslr",
+    "mirrorless",
+    "canon",
     "cr2",
     "cr3",
+    "nikon",
     "nef",
+    "sony",
     "arw",
+    "fujifilm",
     "raf",
+    "adobe",
+    "dng",
+    "olympus",
     "orf",
+    "panasonic",
     "rw2",
+    "pentax",
     "pef",
+    "tiff",
+    "tif",
+    "exif",
+    "jpgfromraw",
+    "previewimage",
+    "photoshop",
     "psd",
     "psb",
-    "tiff",
-    "exif",
-    "image",
+    "embedded",
     "metadata",
-    "extract",
-    "browser"
+    "image",
+    "browser",
+    "cli"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -67,7 +104,8 @@
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "check": "npm run lint && npm run typecheck && npm test",
-    "clean": "rm -rf dist"
+    "clean": "rm -rf dist",
+    "prepublishOnly": "npm run clean && npm run build"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.13",

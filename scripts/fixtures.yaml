@@ -16,7 +16,7 @@
 # Each preview:
 #   width, height, bytes
 #   kind: strips | jpeg-interchange-format | header-jpeg | bmff-jpeg |
-#         psd-resource | panasonic-jpgfromraw
+#         psd-resource | panasonic-jpgfromraw | reencoded
 #   jpeg: baseline | progressive | lossless
 #   decodable: true | false
 
@@ -335,5 +335,62 @@ formats:
           height: 128
           bytes: 4877
           kind: psd-resource
+          jpeg: baseline
+          decodable: true
+
+  psb:
+    - id: psb-metadata
+      filename: psb-metadata.psb
+      url: https://raw.githubusercontent.com/psd-tools/psd-tools/c49b17525254d84c89ab42d1cb0316402ddb89b8/tests/psd_files/metadata.psb
+      bytes: 24242
+      sha256: ed428417c175d15d135666b5896c3e280259f6d243515acc71d4f6c276729897
+      license: MIT (psd-tools test files)
+      source: psd-tools/psd-tools
+      note: >
+        Photoshop Large Document (version 2). Same resource-1036 JPEG
+        thumbnail layout as PSD.
+      previews:
+        - width: 100
+          height: 100
+          bytes: 912
+          kind: psd-resource
+          jpeg: baseline
+          decodable: true
+
+  heic:
+    - id: heic-hopper
+      filename: heic-hopper.heif
+      url: https://raw.githubusercontent.com/python-pillow/Pillow/7d50816f0a6e607b04f9bdc8af7482a29ba578e3/Tests/images/avif/hopper.heif
+      bytes: 3555
+      sha256: 825853d55a81247b9b3b2cef57b3c1a59b172be2a86b2715de47a489e6a8db06
+      license: HPND (Pillow test images)
+      source: python-pillow/Pillow
+      note: >
+        HEVC-coded hopper with no stored JPEG. The preview is decoded and
+        JPEG-encoded (sharp quality 90).
+      previews:
+        - width: 128
+          height: 128
+          bytes: 6457
+          kind: reencoded
+          jpeg: baseline
+          decodable: true
+
+  avif:
+    - id: avif-hopper
+      filename: avif-hopper.avif
+      url: https://raw.githubusercontent.com/python-pillow/Pillow/7d50816f0a6e607b04f9bdc8af7482a29ba578e3/Tests/images/avif/hopper.avif
+      bytes: 3077
+      sha256: d4327b7ab11ed8f11d86978258fc04e5505bcfe511ca2c4efa4838c85d226fd2
+      license: HPND (Pillow test images)
+      source: python-pillow/Pillow
+      note: >
+        AV1-coded hopper with no stored JPEG. The preview is decoded and
+        JPEG-encoded (sharp quality 90).
+      previews:
+        - width: 128
+          height: 128
+          bytes: 6248
+          kind: reencoded
           jpeg: baseline
           decodable: true

@@ -43,15 +43,18 @@ test("rejects a TIFF byte-order mark with the wrong magic number", async () => {
   assert.equal(await detectFormat(hex("49492b000800000000000000")), undefined);
 });
 
-test("detects JPEG, PSD, RAF, CR3, ORF and RW2 by magic bytes", async () => {
+test("detects JPEG, PSD, PSB, RAF, CR3, ORF, RW2, HEIC and AVIF by magic bytes", async () => {
   assert.equal(await detectFormat(hex("ffd8ffe00010")), "jpeg");
-  assert.equal(await detectFormat(hex("384250530001")), "psd"); // 8BPS
+  assert.equal(await detectFormat(hex("384250530001")), "psd"); // 8BPS v1
+  assert.equal(await detectFormat(hex("384250530002")), "psb"); // 8BPS v2
   assert.equal(await detectFormat(hex("4d4d4f5200000008")), "orf"); // MMOR
   assert.equal(await detectFormat(hex("4949550008000000")), "rw2"); // IIU\0
   const raf = new Uint8Array(16);
   raf.set(Buffer.from("FUJIFILMCCD-RAW "));
   assert.equal(await detectFormat(raf), "raf");
   assert.equal(await detectFormat(hex("00000010667479706372782000000000")), "cr3");
+  assert.equal(await detectFormat(hex("000000186674797068656963000000006d69663168656963")), "heic");
+  assert.equal(await detectFormat(hex("00000018667479706176696600000000617669666d696631")), "avif");
 });
 
 test("sniffs real fixtures without needing the whole file", async () => {
@@ -68,4 +71,7 @@ test("sniffs real fixtures without needing the whole file", async () => {
   assert.equal(await detectFormat(fixturePath("pef-pentax-k10d")), "pef");
   assert.equal(await detectFormat(fixturePath("cr3-canon-eos-r6")), "cr3");
   assert.equal(await detectFormat(fixturePath("psd-hopper")), "psd");
+  assert.equal(await detectFormat(fixturePath("psb-metadata")), "psb");
+  assert.equal(await detectFormat(fixturePath("heic-hopper")), "heic");
+  assert.equal(await detectFormat(fixturePath("avif-hopper")), "avif");
 });

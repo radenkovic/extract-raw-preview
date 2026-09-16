@@ -1,6 +1,8 @@
 # thumbnail-extractor
 
-Extract the JPEG (or PNG) preview already embedded in RAW, DNG, TIFF, JPEG, CR3, and PSD files. No full decode, no native dependencies, no re-encoding.
+Extract JPEG or PNG thumbnails from RAW, DNG, TIFF, JPEG, CR3, PSD, PSB, HEIC, and AVIF files.
+
+Stored JPEG/PNG bytes are copied when the container has them. When the only preview is HEVC or AV1 (typical HEIC/AVIF), that image is decoded and JPEG-encoded. Runtime dependencies are used for those decode/encode paths (`libheif-js`, `sharp`).
 
 **Pre-alpha.** The API below works and is tested against real camera files, but the package is not on npm yet.
 
@@ -44,7 +46,7 @@ All functions are async.
 | --- | --- |
 | `extractThumbnail(input, options?)` | The best **decodable** preview, or `{ found: false, reason }` |
 | `listThumbnails(input)` | Every candidate, largest first — including non-decodable ones. No `maxBytes` filter. |
-| `detectFormat(input)` | `"tiff" \| "dng" \| "cr2" \| "jpeg" \| "nef" \| "arw" \| "raf" \| "orf" \| "rw2" \| "pef" \| "cr3" \| "psd"`, or `undefined`. Reads at most 64 KiB. |
+| `detectFormat(input)` | `"tiff" \| "dng" \| "cr2" \| "jpeg" \| "nef" \| "arw" \| "raf" \| "orf" \| "rw2" \| "pef" \| "cr3" \| "psd" \| "psb" \| "heic" \| "avif"`, or `undefined`. Reads at most 64 KiB. |
 
 `extractThumbnail` options:
 
@@ -56,12 +58,12 @@ All functions are async.
 
 ```ts
 type Thumbnail = {
-  data: Uint8Array;       // copy of the stored bytes, never re-encoded
+  data: Uint8Array;       // stored JPEG/PNG copy, or JPEG from HEVC/AV1 decode
   mimeType: "image/jpeg" | "image/png";
   width: number;
   height: number;
   byteLength: number;
-  origin: "embedded-jpeg" | "embedded-png";
+  origin: "embedded-jpeg" | "embedded-png" | "reencoded";
   decodable: boolean;     // false for lossless JPEG (SOF3)
 };
 
@@ -116,10 +118,17 @@ try {
 | Pentax PEF | `.pef` |
 | Canon RAW 3 | `.cr3` |
 | Photoshop | `.psd` |
+| Photoshop Large | `.psb` |
+| HEIC / HEIF | `.heic`, `.heif`, `.hif` |
+| AVIF | `.avif` |
 
-TIFF-container RAWs (DNG, CR2, NEF, ARW, PEF, ORF, RW2) share one IFD walker. JPEG reads EXIF IFD1; RAF, CR3, and PSD have their own parsers.
+TIFF-container RAWs (DNG, CR2, NEF, ARW, PEF, ORF, RW2) share one IFD walker. JPEG reads EXIF IFD1; RAF, CR3, and PSD/PSB have their own parsers. HEIC and AVIF copy stored JPEG/PNG items when present; otherwise the HEVC or AV1 image is decoded and JPEG-encoded.
 
-Planned: PSB, HEIC/HEIF, AVIF. A format ships only once it has a verified fixture with a working preview.
+## Dependencies
+
+`libheif-js` (WASM) decodes HEVC in HEIC/HEIF. `sharp` (native libvips) decodes AVIF and JPEG-encodes re-encoded previews. Both are runtime dependencies; `sharp` installs a platform binary via `npm ci`.
+
+`origin: "reencoded"` marks those JPEGs. Copied previews stay `embedded-jpeg` or `embedded-png`.
 
 ## CLI
 
@@ -129,7 +138,7 @@ thumbnail-extractor <file> [options]
   -o, --output <path>   Write here (default: <name>.thumb.<ext> next to the source)
   --list                Print all candidates; write nothing
   --json                JSON on stdout (`data` omitted)
-  --format <id>         Force tiff | dng | cr2 | jpeg | nef | arw | raf | orf | rw2 | pef | cr3 | psd
+  --format <id>         Force tiff | dng | cr2 | jpeg | nef | arw | raf | orf | rw2 | pef | cr3 | psd | psb | heic | avif
   --prefer <strategy>   largest (default) | smallest
   --max-bytes <n>       Per-candidate cap (default 8388608)
   -h, --help
@@ -156,8 +165,8 @@ npm test             # fixtures:check + build + tests
 
 Fixtures are pinned by URL, size, and SHA-256 in [`scripts/fixtures.yaml`](scripts/fixtures.yaml). `npm run fixtures:check` (run as `pretest`) fails unless every supported format has a verified on-disk sample with a decodable preview.
 
-To add a format: one file in `src/formats/`, one line in `src/registry.ts`, and a redistributable fixture (CC0 / public domain / permissive test-suite license) under a new key in the YAML catalog. To add a sample to an existing format, append an entry under that format's list.
+To add a format: one file in `src/formats/`, one line in `src/registry.ts`, and a redistributable fixture (CC0 / public domain / permissive test-suite license) under a new key in the YAML catalog. The preview may be stored JPEG/PNG or produced by decode + JPEG-encode. Runtime dependencies are fine when they unlock the format. To add a sample to an existing format, append an entry under that format's list.
 
 ## License
 
-[MIT](LICENSE.md)
+[MIT](LICENSE.md). HEVC decode uses `libheif-js` (LGPL-3.0); AVIF decode and JPEG encode use `sharp` (Apache-2.0).

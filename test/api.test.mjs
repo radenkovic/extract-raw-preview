@@ -56,7 +56,7 @@ test("rejects unrecognized input with ERR_UNRECOGNIZED_FORMAT", async () => {
 
 test("rejects an unregistered forced format with ERR_UNSUPPORTED_FORMAT", async () => {
   await assert.rejects(
-    () => extractThumbnail(fixturePath("tiff-child-ifd"), { format: "heic" }),
+    () => extractThumbnail(fixturePath("tiff-child-ifd"), { format: "nope" }),
     hasCode("ERR_UNSUPPORTED_FORMAT"),
   );
 });
@@ -118,6 +118,7 @@ test("returned bytes are byte-for-byte as stored in the container", async () => 
   for (const entry of FIXTURES) {
     const source = await readFixture(entry.id);
     for (const candidate of await listThumbnails(fixturePath(entry.id))) {
+      if (candidate.origin === "reencoded") continue;
       assert.ok(
         source.includes(Buffer.from(candidate.data)),
         `${entry.id}: preview bytes must appear verbatim in the container`,

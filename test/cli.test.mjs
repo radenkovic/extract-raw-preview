@@ -68,7 +68,7 @@ test("a missing input file argument is a usage error (exit 2)", async () => {
 });
 
 test("an invalid --format is a usage error (exit 2)", async () => {
-  const { code, stderr } = await cli([fixturePath("tiff-child-ifd"), "--format", "heic"]);
+  const { code, stderr } = await cli([fixturePath("tiff-child-ifd"), "--format", "nope"]);
   assert.equal(code, 2);
   assert.match(stderr, /unknown format/);
 });

@@ -19,23 +19,26 @@ export type FormatId =
   | "rw2"
   | "pef"
   | "cr3"
-  | "psd";
+  | "psd"
+  | "psb"
+  | "heic"
+  | "avif";
 
 /** MIME type of returned preview bytes. */
 export type PreviewMimeType = "image/jpeg" | "image/png";
 
-/** Container location the preview bytes were read from. */
-export type ThumbnailOrigin = "embedded-jpeg" | "embedded-png";
+/** How the preview bytes were produced: copied from the container, or decoded and JPEG-encoded. */
+export type ThumbnailOrigin = "embedded-jpeg" | "embedded-png" | "reencoded";
 
 interface ThumbnailShape {
-  /** Raw preview bytes, exactly as stored in the container. See SPEC §3.1. */
+  /** Preview bytes: a copy of stored JPEG/PNG, or a JPEG produced by re-encoding. */
   data: Uint8Array;
   mimeType: PreviewMimeType;
   width: number;
   height: number;
   /** Byte length of `data`. Redundant but convenient for ranking/logging. */
   byteLength: number;
-  /** Where the bytes came from, for debugging/telemetry. */
+  /** Where the bytes came from: copied from the container, or decoded then JPEG-encoded. */
   origin: ThumbnailOrigin;
   /**
    * True when a standard image decoder can open these bytes.

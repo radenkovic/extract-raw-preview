@@ -21,7 +21,8 @@ export function matches(bytes: Uint8Array): boolean {
   return sniffFormat(bytes) === "psd";
 }
 
-export async function extract(reader: Reader): Promise<ThumbnailCandidate[]> {
+/** Image-resource thumbnails; shared with PSB (same 32-bit resource lengths). */
+export function extractPhotoshopPreviews(reader: Reader): ThumbnailCandidate[] {
   if (!reader.has(26, 8)) return [];
 
   let offset = 26;
@@ -70,4 +71,8 @@ export async function extract(reader: Reader): Promise<ThumbnailCandidate[]> {
     if (offset % 2 !== 0) offset++;
   }
   return found;
+}
+
+export async function extract(reader: Reader): Promise<ThumbnailCandidate[]> {
+  return extractPhotoshopPreviews(reader);
 }

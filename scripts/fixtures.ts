@@ -2,7 +2,7 @@
 /**
  * Fixture downloader for thumbnail-extractor.
  *
- * Downloads genuine sample images (RAW / DNG / TIFF) from public sources into
+ * Downloads genuine sample images from public sources into
  * `test/fixtures/`, which is gitignored. The catalog lives in `fixtures.yaml`
  * next to this script; every file is pinned by byte size and SHA-256 so a
  * download either matches exactly or fails loudly.
@@ -16,7 +16,7 @@
  *
  * Acceptance criteria (enforced by --check):
  *   every supported format must have at least one *working* fixture, i.e. a
- *   sample that really contains a decodable embedded JPEG preview.
+ *   sample with a decodable preview (stored JPEG/PNG, or decoded HEVC/AV1).
  */
 
 import { createHash } from "node:crypto";
@@ -39,7 +39,8 @@ type PreviewKind =
   | "header-jpeg"
   | "bmff-jpeg"
   | "psd-resource"
-  | "panasonic-jpgfromraw";
+  | "panasonic-jpgfromraw"
+  | "reencoded";
 
 export interface PreviewExpectation {
   width: number;
@@ -74,6 +75,7 @@ const PREVIEW_KINDS = new Set<PreviewKind>([
   "bmff-jpeg",
   "psd-resource",
   "panasonic-jpgfromraw",
+  "reencoded",
 ]);
 const SHA256_RE = /^[0-9a-f]{64}$/;
 

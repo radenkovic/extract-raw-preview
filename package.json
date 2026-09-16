@@ -1,6 +1,6 @@
 {
   "name": "extract-raw-preview",
-  "version": "1.0.1",
+  "version": "1.1.0",
   "description": "Zero-dependency camera RAW thumbnail extractor for JavaScript. Extract embedded JPEG/PNG previews in Node.js and browsers from CR2, CR3, NEF, ARW, RAF, DNG, TIFF, PSD, and more—no native addons.",
   "type": "module",
   "license": "MIT",

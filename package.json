@@ -108,9 +108,9 @@
     "prepublishOnly": "npm run clean && npm run build"
   },
   "devDependencies": {
-    "@biomejs/biome": "2.5.13",
-    "@types/node": "^24.13.5",
-    "typescript": "^5.9.0",
+    "@biomejs/biome": "2.5.14",
+    "@types/node": "^26.6.1",
+    "typescript": "^7.0.2",
     "yaml": "^2.9.1"
   }
 }

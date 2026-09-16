@@ -271,6 +271,6 @@ test("operational errors under --json still produce parseable stdout", async () 
 
 test("the binary is declared in package.json", async () => {
   const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(pkg.bin["extract-raw-preview"], "./dist/cli.js");
+  assert.equal(pkg.bin["extract-raw-preview"], "dist/cli.js");
   assert.equal(basename(CLI), "cli.js");
 });

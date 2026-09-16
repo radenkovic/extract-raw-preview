@@ -52,9 +52,9 @@ On [the package settings](https://www.npmjs.com/package/extract-raw-preview) →
 
 The workflow name, branch (`main`), and filename must match exactly. Wrong workflow name is a common 404 on publish.
 
-## First publish (`0.1.0`)
+## First publish
 
-npm trusted publishing cannot create a package. Publish `0.1.0` once from a logged-in machine, then add the trusted publisher.
+npm trusted publishing cannot create a package. This repo’s first version was `1.0.0`, published from a logged-in machine. If you ever need to recreate that step for a **new** package name:
 
 ```bash
 npm login
@@ -64,7 +64,7 @@ npm publish --access public --no-provenance
 
 `--no-provenance` is required locally: `publishConfig.provenance` is for CI OIDC. `prepublishOnly` builds `dist/` before the tarball is packed.
 
-After npm shows `extract-raw-preview@0.1.0`, add the trusted publisher table above. Every later version goes through the routine flow, with provenance.
+After npm shows the package, add the trusted publisher table above. Every later version goes through the routine flow, with provenance.
 
 ## Commands
 

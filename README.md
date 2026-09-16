@@ -178,6 +178,21 @@ Fixtures are pinned by URL, size, and SHA-256 in [`scripts/fixtures.yaml`](scrip
 
 To add a format: one file in `src/formats/`, one line in `src/registry.ts`, and a redistributable fixture (CC0 / public domain / permissive test-suite license) under a new key in the YAML catalog. The preview must be stored JPEG or PNG bytes — this library copies them and does not decode pixels. To add a sample to an existing format, append an entry under that format's list.
 
+## Releasing
+
+Versioning uses [Changesets](https://changesets.dev). On a PR that should land in an npm release:
+
+```bash
+npx changeset
+```
+
+Pick patch, minor, or major and write a short summary. Merging to `main` opens (or updates) a **Version packages** PR. Merging that PR publishes to npm with provenance.
+
+One-time setup:
+
+1. In the GitHub repo: **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**.
+2. On the npm package: add a trusted publisher for this repository, workflow `release.yml`, and branch `main`.
+
 ## License
 
 [MIT](LICENSE.md) © [Dan Radenkovic](https://radenkovic.org)

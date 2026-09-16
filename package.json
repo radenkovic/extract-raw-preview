@@ -1,6 +1,6 @@
 {
   "name": "extract-raw-preview",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Extract embedded JPEG/PNG previews from camera RAW files (CR2, CR3, NEF, ARW, RAF, DNG, ORF, RW2, PEF), TIFF, JPEG EXIF thumbnails, and Photoshop PSD/PSB. Pure JavaScript — Node.js and browser, no native decoder.",
   "type": "module",
   "license": "MIT",

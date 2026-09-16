@@ -22,6 +22,10 @@
     "node": ">=20"
   },
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "browser": "./dist/browser.js",
@@ -105,10 +109,14 @@
     "lint:fix": "biome check --write .",
     "check": "npm run lint && npm run typecheck && npm test",
     "clean": "rm -rf dist",
-    "prepublishOnly": "npm run clean && npm run build"
+    "prepublishOnly": "npm run clean && npm run build",
+    "changeset": "changeset",
+    "release": "changeset publish"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.14",
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@types/node": "^26.6.1",
     "typescript": "^7.0.2",
     "yaml": "^2.9.1"

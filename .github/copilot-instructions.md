@@ -16,7 +16,7 @@ npm run check          # lint + typecheck + test
 
 Run `npm run fixtures` before tests. `npm test` runs `fixtures:check` as `pretest` and fails if any supported format lacks a verified on-disk sample with a decodable preview. Never commit `test/fixtures/` or `dist/`.
 
-Finish work with `npm run check` passing. Use Biome (`npm run lint:fix`) rather than Prettier/ESLint.
+Finish work with `npm run check` passing. Use Biome (`npm run lint:fix`) rather than Prettier/ESLint. User-facing package changes need a changeset (`npx changeset`); tooling-only PRs do not.
 
 ## Architecture
 

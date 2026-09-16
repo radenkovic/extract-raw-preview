@@ -8,4 +8,4 @@ On a branch that should land in a release:
 npx changeset
 ```
 
-That writes a markdown file in this folder. Merging to `main` opens a Version packages pull request; merging that PR publishes to npm.
+That writes a markdown file in this folder. Merging to `main` opens a Version packages pull request; merging that PR publishes to npm. Full steps are in [RELEASING.md](../RELEASING.md).

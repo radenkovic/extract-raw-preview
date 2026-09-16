@@ -180,18 +180,7 @@ To add a format: one file in `src/formats/`, one line in `src/registry.ts`, and 
 
 ## Releasing
 
-Versioning uses [Changesets](https://changesets.dev). On a PR that should land in an npm release:
-
-```bash
-npx changeset
-```
-
-Pick patch, minor, or major and write a short summary. Merging to `main` opens (or updates) a **Version packages** PR. Merging that PR publishes to npm with provenance.
-
-One-time setup:
-
-1. In the GitHub repo: **Settings → Actions → General → Allow GitHub Actions to create and approve pull requests**.
-2. On the npm package: add a trusted publisher for this repository, workflow `release.yml`, and branch `main`.
+Versioning uses [Changesets](https://changesets.dev). See [RELEASING.md](RELEASING.md) for the PR flow, the first `0.1.0` publish, and npm trusted publishing.
 
 ## License
 

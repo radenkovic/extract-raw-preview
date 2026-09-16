@@ -1,19 +1,24 @@
-# thumbnail-extractor
+# extract-raw-preview
 
-Extract JPEG or PNG thumbnails from RAW, DNG, TIFF, JPEG, CR3, PSD, and PSB files.
+Copy the JPEG or PNG preview already stored inside a camera RAW or image file — without decoding pixels, re-encoding, or depending on a native RAW decoder.
 
-Stored JPEG/PNG bytes are copied as they appear in the container. The library does not decode pixels or re-encode images, so the same code runs in Node.js and in the browser.
+Cameras and editors embed a displayable preview so you can show a thumbnail without interpreting mosaiced sensor data or a Photoshop document. This library finds those stored bytes and returns them as they appear in the container. The same code runs in Node.js (a path, a `file:` URL, or bytes) and in the browser (`Uint8Array` only).
+
+It currently extracts previews from:
+
+- **TIFF-family RAW** — Adobe DNG, Canon CR2, Nikon NEF, Sony ARW, Olympus ORF, Panasonic RW2, Pentax PEF, and generic TIFF
+- **Other containers** — Fujifilm RAF, Canon CR3, JPEG (EXIF thumbnail), Photoshop PSD and PSB
 
 Requires **Node.js 20+** for the CLI and path-based API. ESM only. No runtime dependencies.
 
 ```bash
-npm install thumbnail-extractor
+npm install extract-raw-preview
 ```
 
 ## Usage
 
 ```ts
-import { extractThumbnail, listThumbnails } from "thumbnail-extractor";
+import { extractThumbnail, listThumbnails } from "extract-raw-preview";
 
 const result = await extractThumbnail("IMG_1234.CR2");
 
@@ -31,16 +36,16 @@ const candidates = await listThumbnails("photo.dng");
 In the browser, pass the file bytes. Bundlers pick the browser build automatically (no `node:fs`, no native addons):
 
 ```ts
-import { extractThumbnail } from "thumbnail-extractor";
+import { extractThumbnail } from "extract-raw-preview";
 
 const bytes = new Uint8Array(await file.arrayBuffer());
 const result = await extractThumbnail(bytes);
 ```
 
 ```bash
-npx thumbnail-extractor photo.cr2                 # writes photo.thumb.jpg
-npx thumbnail-extractor photo.dng -o thumb.jpg --json
-npx thumbnail-extractor photo.tiff --list         # inspect, write nothing
+npx extract-raw-preview photo.cr2                 # writes photo.thumb.jpg
+npx extract-raw-preview photo.dng -o thumb.jpg --json
+npx extract-raw-preview photo.tiff --list         # inspect, write nothing
 ```
 
 Input can be a path, a `file:` URL, or a `Uint8Array`. Format is sniffed from magic bytes. Paths and `file:` URLs are Node-only.
@@ -53,7 +58,7 @@ All functions are async.
 | --- | --- |
 | `extractThumbnail(input, options?)` | The best **decodable** preview, or `{ found: false, reason }` |
 | `listThumbnails(input)` | Every candidate, largest first — including non-decodable ones. No `maxBytes` filter. |
-| `detectFormat(input)` | `"tiff" \| "dng" \| "cr2" \| "jpeg" \| "nef" \| "arw" \| "raf" \| "orf" \| "rw2" \| "pef" \| "cr3" \| "psd" \| "psb"`, or `undefined`. Reads at most 64 KiB. |
+| `detectFormat(input)` | A `FormatId` from the table below, or `undefined`. Reads at most 64 KiB. |
 
 `extractThumbnail` options:
 
@@ -100,7 +105,7 @@ Broken input **rejects** with `ExtractError`:
 | `ERR_IO` | Path/URL could not be read. |
 
 ```ts
-import { ExtractError } from "thumbnail-extractor";
+import { ExtractError } from "extract-raw-preview";
 
 try {
   await extractThumbnail("photo.cr2");
@@ -111,33 +116,35 @@ try {
 
 ## Formats
 
-| Format | Extensions |
-| --- | --- |
-| TIFF | `.tif`, `.tiff` |
-| DNG | `.dng` |
-| Canon RAW 2 | `.cr2` |
-| JPEG | `.jpg`, `.jpeg` |
-| Nikon NEF | `.nef` |
-| Sony ARW | `.arw` |
-| Fujifilm RAF | `.raf` |
-| Olympus ORF | `.orf` |
-| Panasonic RW2 | `.rw2` |
-| Pentax PEF | `.pef` |
-| Canon RAW 3 | `.cr3` |
-| Photoshop | `.psd` |
-| Photoshop Large | `.psb` |
+Format is sniffed from magic bytes (first 64 KiB), not the filename. Pass `format` / `--format` with the **id** below to skip sniffing.
 
-TIFF-container RAWs (DNG, CR2, NEF, ARW, PEF, ORF, RW2) share one IFD walker. JPEG reads EXIF IFD1; RAF, CR3, and PSD/PSB have their own parsers.
+| Id | Format | Extensions | Where the preview lives |
+| --- | --- | --- | --- |
+| `tiff` | TIFF | `.tif`, `.tiff` | JPEG-compressed IFDs and SubIFDs |
+| `dng` | Adobe DNG | `.dng` | Reduced-resolution JPEG SubIFDs |
+| `cr2` | Canon RAW 2 | `.cr2` | IFD JPEG strips plus a `JPEGInterchangeFormat` thumbnail |
+| `nef` | Nikon NEF | `.nef` | SubIFDs or `JPEGInterchangeFormat` |
+| `arw` | Sony ARW | `.arw` | `JPEGInterchangeFormat` on IFD0 / IFD1 |
+| `orf` | Olympus ORF | `.orf` | IFD1 `JPEGInterchangeFormat` |
+| `rw2` | Panasonic RW2 | `.rw2` | Panasonic `JpgFromRaw`, plus its nested EXIF thumbnail |
+| `pef` | Pentax PEF | `.pef` | `JPEGInterchangeFormat` on later IFDs |
+| `jpeg` | JPEG | `.jpg`, `.jpeg` | EXIF IFD1 thumbnail (the primary image is not a preview) |
+| `raf` | Fujifilm RAF | `.raf` | Header JPEG, plus any nested EXIF thumbnail |
+| `cr3` | Canon RAW 3 | `.cr3` | BMFF `THMB`, Canon `uuid`, and `mdat` JPEGs |
+| `psd` | Photoshop | `.psd` | Image resource 1036 (JPEG thumbnail) |
+| `psb` | Photoshop Large | `.psb` | Same resource layout as PSD |
+
+TIFF-container RAWs (DNG, CR2, NEF, ARW, PEF, ORF, RW2) share one IFD walker. JPEG reads EXIF IFD1; RAF, CR3, and PSD/PSB have their own parsers. Lossless JPEG (SOF3) previews are listed with `decodable: false` and are never returned by `extractThumbnail`.
 
 ## CLI
 
 ```
-thumbnail-extractor <file> [options]
+extract-raw-preview <file> [options]
 
   -o, --output <path>   Write here (default: <name>.thumb.<ext> next to the source)
   --list                Print all candidates; write nothing
   --json                JSON on stdout (`data` omitted)
-  --format <id>         Force tiff | dng | cr2 | jpeg | nef | arw | raf | orf | rw2 | pef | cr3 | psd | psb
+  --format <id>         Force a format id from the table above
   --prefer <strategy>   largest (default) | smallest
   --max-bytes <n>       Per-candidate cap (default 8388608)
   -h, --help

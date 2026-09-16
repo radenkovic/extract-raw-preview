@@ -19,7 +19,7 @@ let workDir;
 let emptyTiffPath;
 
 before(async () => {
-  workDir = await mkdtemp(join(tmpdir(), "thumbnail-extractor-cli-"));
+  workDir = await mkdtemp(join(tmpdir(), "extract-raw-preview-cli-"));
   emptyTiffPath = join(workDir, "empty.tif");
   const { writeFile } = await import("node:fs/promises");
   await writeFile(emptyTiffPath, minimalTiffWithoutPreviews());
@@ -51,7 +51,7 @@ const exists = async (path) => {
 test("--help exits 0 with usage on stdout", async () => {
   const { code, stdout, stderr } = await cli(["--help"]);
   assert.equal(code, 0);
-  assert.match(stdout, /^Usage: thumbnail-extractor/);
+  assert.match(stdout, /^Usage: extract-raw-preview/);
   assert.equal(stderr, "");
 });
 
@@ -271,6 +271,6 @@ test("operational errors under --json still produce parseable stdout", async () 
 
 test("the binary is declared in package.json", async () => {
   const pkg = JSON.parse(await readFile(new URL("../package.json", import.meta.url), "utf8"));
-  assert.equal(pkg.bin["thumbnail-extractor"], "./dist/cli.js");
+  assert.equal(pkg.bin["extract-raw-preview"], "./dist/cli.js");
   assert.equal(basename(CLI), "cli.js");
 });

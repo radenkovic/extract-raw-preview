@@ -1,7 +1,7 @@
 /**
  * Operational errors (SPEC §4.3).
  *
- * `thumbnail-extractor` separates *reportable outcomes* — which resolve as
+ * `extract-raw-preview` separates *reportable outcomes* — which resolve as
  * `{ found: false, reason }` — from *operational errors*, which reject the
  * promise with an `Error` carrying one of these codes.
  */

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Fixture downloader for thumbnail-extractor.
+ * Fixture downloader for extract-raw-preview.
  *
  * Downloads genuine sample images from public sources into
  * `test/fixtures/`, which is gitignored. The catalog lives in `fixtures.yaml`
@@ -253,7 +253,7 @@ async function verify(f: Fixture): Promise<{ ok: true } | { ok: false; reason: s
   return { ok: true };
 }
 
-const USER_AGENT = "thumbnail-extractor-fixtures/1.0 (+https://github.com/)";
+const USER_AGENT = "extract-raw-preview-fixtures/1.0 (+https://github.com/)";
 
 /** Streams a URL to disk, hashing as it goes so nothing is buffered in memory. */
 async function download(url: string, dest: string): Promise<{ bytes: number; sha256: string }> {

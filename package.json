@@ -1,5 +1,5 @@
 {
-  "name": "thumbnail-extractor",
+  "name": "extract-raw-preview",
   "version": "0.1.0",
   "description": "Extract embedded JPEG/PNG thumbnails from RAW, DNG, TIFF, JPEG, CR3, PSD, and PSB files.",
   "type": "module",
@@ -24,7 +24,7 @@
     }
   },
   "bin": {
-    "thumbnail-extractor": "./dist/cli.js"
+    "extract-raw-preview": "./dist/cli.js"
   },
   "files": [
     "dist",

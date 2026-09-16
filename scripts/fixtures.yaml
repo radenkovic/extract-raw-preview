@@ -1,4 +1,4 @@
-# Fixture catalog for thumbnail-extractor.
+# Fixture catalog for extract-raw-preview.
 #
 # Single source of truth for test samples. Downloads land in
 # test/fixtures/ (gitignored) and are pinned here by URL, byte size,

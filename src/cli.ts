@@ -15,7 +15,7 @@ import { DEFAULT_MAX_BYTES, extractThumbnail, listThumbnails } from "./index.js"
 import { isFormatId, supportedFormats } from "./registry.js";
 import type { FormatId, Thumbnail } from "./types.js";
 
-const USAGE = `Usage: thumbnail-extractor <file> [options]
+const USAGE = `Usage: extract-raw-preview <file> [options]
 
 Options:
   -o, --output <path>   Write the selected preview here.

@@ -1,4 +1,4 @@
-# thumbnail-extractor
+# extract-raw-preview
 
 ESM-only TypeScript library. Node.js 20+ for the CLI and path-based API; the core extractor is dependency-free and runs in the browser from a `Uint8Array`. Package manager is **npm**. Do not add runtime dependencies that decode pixels, encode images, or pull in native/WASM addons.
 

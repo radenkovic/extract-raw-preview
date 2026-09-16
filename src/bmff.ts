@@ -1,5 +1,5 @@
 /**
- * Minimal ISO BMFF box walker for CR3 (and similar `ftyp` containers).
+ * Minimal ISO BMFF box walker for CR3.
  *
  * Only container boxes are recursed into. `mdat` is reported but not walked,
  * so a compressed raw payload cannot hide extra false-positive JPEGs.

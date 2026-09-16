@@ -53,8 +53,7 @@ export function assertCandidatesMatch(actual, entry) {
     assert.equal(got.byteLength, want.bytes, `${label} byteLength`);
     assert.equal(got.decodable, want.decodable, `${label} decodable`);
     assert.equal(got.mimeType, "image/jpeg", `${label} mimeType`);
-    const origin = want.kind === "reencoded" ? "reencoded" : "embedded-jpeg";
-    assert.equal(got.origin, origin, `${label} origin`);
+    assert.equal(got.origin, "embedded-jpeg", `${label} origin`);
     assert.equal(got.byteLength, got.data.byteLength, `${label} byteLength === data.byteLength`);
   }
 }

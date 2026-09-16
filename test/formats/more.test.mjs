@@ -6,20 +6,7 @@ import test from "node:test";
 import { detectFormat, extractThumbnail, listThumbnails } from "../../dist/index.js";
 import { assertCandidatesMatch, filesForFormat, fixturePath } from "../helpers.mjs";
 
-const FORMATS = [
-  "jpeg",
-  "nef",
-  "arw",
-  "raf",
-  "orf",
-  "rw2",
-  "pef",
-  "cr3",
-  "psd",
-  "psb",
-  "heic",
-  "avif",
-];
+const FORMATS = ["jpeg", "nef", "arw", "raf", "orf", "rw2", "pef", "cr3", "psd", "psb"];
 
 for (const format of FORMATS) {
   for (const entry of filesForFormat(format)) {

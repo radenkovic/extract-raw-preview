@@ -20,25 +20,23 @@ export type FormatId =
   | "pef"
   | "cr3"
   | "psd"
-  | "psb"
-  | "heic"
-  | "avif";
+  | "psb";
 
 /** MIME type of returned preview bytes. */
 export type PreviewMimeType = "image/jpeg" | "image/png";
 
-/** How the preview bytes were produced: copied from the container, or decoded and JPEG-encoded. */
-export type ThumbnailOrigin = "embedded-jpeg" | "embedded-png" | "reencoded";
+/** How the preview bytes were produced: copied JPEG or copied PNG. */
+export type ThumbnailOrigin = "embedded-jpeg" | "embedded-png";
 
 interface ThumbnailShape {
-  /** Preview bytes: a copy of stored JPEG/PNG, or a JPEG produced by re-encoding. */
+  /** Preview bytes: a copy of stored JPEG/PNG. */
   data: Uint8Array;
   mimeType: PreviewMimeType;
   width: number;
   height: number;
   /** Byte length of `data`. Redundant but convenient for ranking/logging. */
   byteLength: number;
-  /** Where the bytes came from: copied from the container, or decoded then JPEG-encoded. */
+  /** Where the bytes came from: copied JPEG or copied PNG. */
   origin: ThumbnailOrigin;
   /**
    * True when a standard image decoder can open these bytes.

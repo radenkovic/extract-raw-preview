@@ -118,7 +118,6 @@ test("returned bytes are byte-for-byte as stored in the container", async () => 
   for (const entry of FIXTURES) {
     const source = await readFixture(entry.id);
     for (const candidate of await listThumbnails(fixturePath(entry.id))) {
-      if (candidate.origin === "reencoded") continue;
       assert.ok(
         source.includes(Buffer.from(candidate.data)),
         `${entry.id}: preview bytes must appear verbatim in the container`,

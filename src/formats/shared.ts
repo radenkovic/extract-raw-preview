@@ -93,24 +93,6 @@ function buildCandidate(
   };
 }
 
-/** JPEG produced by decoding HEVC/AV1 when that is the usable preview. */
-export function candidateFromReencoded(
-  data: Uint8Array,
-  width: number,
-  height: number,
-): ThumbnailCandidate {
-  return {
-    data,
-    mimeType: "image/jpeg",
-    width,
-    height,
-    byteLength: data.byteLength,
-    origin: "reencoded",
-    decodable: true,
-    kind: "baseline-jpeg",
-  };
-}
-
 /** Wraps a standalone JPEG/PNG buffer as a candidate when it has a frame header. */
 export function candidateFromImageBytes(data: Uint8Array): ThumbnailCandidate | undefined {
   const info = inspectImage(data);

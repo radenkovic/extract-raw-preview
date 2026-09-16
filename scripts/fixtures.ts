@@ -16,7 +16,7 @@
  *
  * Acceptance criteria (enforced by --check):
  *   every supported format must have at least one *working* fixture, i.e. a
- *   sample with a decodable preview (stored JPEG/PNG, or decoded HEVC/AV1).
+ *   sample with a decodable stored JPEG/PNG preview.
  */
 
 import { createHash } from "node:crypto";
@@ -39,8 +39,7 @@ type PreviewKind =
   | "header-jpeg"
   | "bmff-jpeg"
   | "psd-resource"
-  | "panasonic-jpgfromraw"
-  | "reencoded";
+  | "panasonic-jpgfromraw";
 
 export interface PreviewExpectation {
   width: number;
@@ -75,7 +74,6 @@ const PREVIEW_KINDS = new Set<PreviewKind>([
   "bmff-jpeg",
   "psd-resource",
   "panasonic-jpgfromraw",
-  "reencoded",
 ]);
 const SHA256_RE = /^[0-9a-f]{64}$/;
 

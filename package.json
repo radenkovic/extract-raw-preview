@@ -1,7 +1,7 @@
 {
   "name": "thumbnail-extractor",
   "version": "0.1.0",
-  "description": "Extract thumbnails and previews from RAW, DNG, HEIC, AVIF, and other image formats.",
+  "description": "Extract embedded JPEG/PNG thumbnails from RAW, DNG, TIFF, JPEG, CR3, PSD, and PSB files.",
   "type": "module",
   "license": "MIT",
   "engines": {
@@ -9,10 +9,18 @@
   },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
+  "browser": "./dist/browser.js",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js"
+      "browser": {
+        "types": "./dist/browser.d.ts",
+        "default": "./dist/browser.js"
+      },
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "default": "./dist/index.js"
     }
   },
   "bin": {
@@ -38,14 +46,12 @@
     "pef",
     "psd",
     "psb",
-    "heic",
-    "heif",
-    "avif",
     "tiff",
     "exif",
     "image",
     "metadata",
-    "extract"
+    "extract",
+    "browser"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
@@ -68,9 +74,5 @@
     "@types/node": "^24.13.5",
     "typescript": "^5.9.0",
     "yaml": "^2.9.1"
-  },
-  "dependencies": {
-    "libheif-js": "^1.23.2",
-    "sharp": "^0.35.4"
   }
 }

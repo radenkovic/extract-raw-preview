@@ -8,8 +8,7 @@ body:
       value: |
         A format ships only once it has a verified fixture with a working (decodable) preview.
         Samples must be CC0, public domain, or another permissive test-suite license.
-        Copy stored JPEG/PNG when present. Decode and JPEG-encode when that is the usable
-        preview (HEVC/AV1). Runtime dependencies are fine if they unlock the format.
+        Copy stored JPEG/PNG preview bytes. Do not decode pixels or re-encode images.
 
         Assign this issue to Copilot if you want a PR. Custom instructions live in `.github/copilot-instructions.md`.
 
@@ -18,7 +17,7 @@ body:
     attributes:
       label: Format id
       description: Lowercase id for `FormatId`, `src/formats/<id>.ts`, the registry, and `--format`.
-      placeholder: heic
+      placeholder: raf
     validations:
       required: true
 
@@ -27,7 +26,7 @@ body:
     attributes:
       label: Extensions
       description: File extensions this format uses.
-      placeholder: .heic, .heif
+      placeholder: .raf
     validations:
       required: true
 
@@ -36,7 +35,7 @@ body:
     attributes:
       label: How to detect it
       description: Magic bytes, box brands, TIFF Make, or other sniffing hints. Point at a spec or a known-good file if you can.
-      placeholder: ftyp brand mif1 / heic; HEIF box layout for the preview item
+      placeholder: FUJIFILMCCD-RAW header; JPEG preview offset in the RAF directory
     validations:
       required: true
 
@@ -44,7 +43,7 @@ body:
     id: fixture-url
     attributes:
       label: Fixture URL
-      description: Direct download of one redistributable sample with a working preview (stored JPEG/PNG, or HEVC/AV1 we can decode).
+      description: Direct download of one redistributable sample with a stored JPEG/PNG preview.
     validations:
       required: true
 
@@ -69,4 +68,4 @@ body:
     id: notes
     attributes:
       label: Extra notes
-      description: Where the preview lives (EXIF IFD1, THMB box, SubIFD, HEVC item, …), known lossless-only cameras, decode/re-encode notes, anything an agent should not invent.
+      description: Where the preview lives (EXIF IFD1, THMB box, SubIFD, …), known lossless-only cameras, anything an agent should not invent.

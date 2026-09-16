@@ -31,61 +31,6 @@ function photoshopVersion(bytes: Uint8Array): number {
   return ((bytes[4] as number) << 8) | (bytes[5] as number);
 }
 
-function fourccAt(bytes: Uint8Array, offset: number): string {
-  return String.fromCharCode(
-    bytes[offset] as number,
-    bytes[offset + 1] as number,
-    bytes[offset + 2] as number,
-    bytes[offset + 3] as number,
-  );
-}
-
-/** Major + compatible brands from an ISO BMFF `ftyp` box, or `undefined`. */
-export function ftypBrands(bytes: Uint8Array): string[] | undefined {
-  if (bytes.length < 16) return undefined;
-  if (fourccAt(bytes, 4) !== "ftyp") return undefined;
-  const size =
-    (((bytes[0] as number) << 24) |
-      ((bytes[1] as number) << 16) |
-      ((bytes[2] as number) << 8) |
-      (bytes[3] as number)) >>>
-    0;
-  if (size < 16 || size > bytes.length) return undefined;
-  const brands = [fourccAt(bytes, 8)];
-  for (let offset = 16; offset + 4 <= size; offset += 4) {
-    brands.push(fourccAt(bytes, offset));
-  }
-  return brands;
-}
-
-const AVIF_BRANDS = new Set(["avif", "avis", "avio", "MA1A", "MA1B"]);
-const HEIC_BRANDS = new Set([
-  "heic",
-  "heix",
-  "hevc",
-  "hevx",
-  "heim",
-  "heis",
-  "hevm",
-  "hevs",
-  "mif1",
-  "msf1",
-  "mif2",
-  "mif3",
-  "heif",
-  "heifs",
-  "jpeg",
-]);
-
-export function hasAvifSignature(bytes: Uint8Array): boolean {
-  return ftypBrands(bytes)?.some((brand) => AVIF_BRANDS.has(brand)) === true;
-}
-
-export function hasHeicSignature(bytes: Uint8Array): boolean {
-  if (hasAvifSignature(bytes) || hasCr3Signature(bytes)) return false;
-  return ftypBrands(bytes)?.some((brand) => HEIC_BRANDS.has(brand)) === true;
-}
-
 export function hasRafSignature(bytes: Uint8Array): boolean {
   if (bytes.length < 16) return false;
   const magic = "FUJIFILMCCD-RAW ";
@@ -192,8 +137,6 @@ export function sniffFormat(bytes: Uint8Array): FormatId | undefined {
   }
   if (hasRafSignature(bytes)) return "raf";
   if (hasCr3Signature(bytes)) return "cr3";
-  if (hasAvifSignature(bytes)) return "avif";
-  if (hasHeicSignature(bytes)) return "heic";
   if (hasOrfSignature(bytes)) return "orf";
   if (hasRw2Signature(bytes)) return "rw2";
   if (!hasTiffMagic(bytes)) return undefined;

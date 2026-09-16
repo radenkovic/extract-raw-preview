@@ -5,11 +5,9 @@
  */
 
 import * as arw from "./formats/arw.js";
-import * as avif from "./formats/avif.js";
 import * as cr2 from "./formats/cr2.js";
 import * as cr3 from "./formats/cr3.js";
 import * as dng from "./formats/dng.js";
-import * as heic from "./formats/heic.js";
 import * as jpeg from "./formats/jpeg.js";
 import * as nef from "./formats/nef.js";
 import * as orf from "./formats/orf.js";
@@ -41,8 +39,6 @@ export const registry: Readonly<Record<FormatId, Extractor>> = {
   cr3,
   psd,
   psb,
-  heic,
-  avif,
 };
 
 /** Returns the extractor for `id`, or `undefined` when none is registered. */
@@ -68,6 +64,4 @@ export const supportedFormats: readonly FormatId[] = Object.freeze([
   "cr3",
   "psd",
   "psb",
-  "heic",
-  "avif",
 ] as const);

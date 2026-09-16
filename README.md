@@ -1,34 +1,48 @@
-# extract-raw-preview
+# extract-raw-preview — camera RAW thumbnail extractor
 
 [![npm version](https://img.shields.io/npm/v/extract-raw-preview)](https://www.npmjs.com/package/extract-raw-preview)
+[![npm downloads](https://img.shields.io/npm/dm/extract-raw-preview)](https://www.npmjs.com/package/extract-raw-preview)
 [![CI](https://github.com/radenkovic/extract-raw-preview/actions/workflows/ci.yml/badge.svg)](https://github.com/radenkovic/extract-raw-preview/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.md)
 [![Node.js](https://img.shields.io/node/v/extract-raw-preview)](https://nodejs.org)
 
-Extract embedded JPEG and PNG previews from camera RAW files — Canon CR2/CR3, Nikon NEF, Sony ARW, Fujifilm RAF, Adobe DNG, Olympus ORF, Panasonic RW2, Pentax PEF — plus TIFF, JPEG EXIF thumbnails, and Photoshop PSD/PSB.
-
-Cameras and editors store a displayable preview so you can show a thumbnail without decoding mosaiced sensor data. This library copies those stored bytes as they appear in the container. No pixel decode, no re-encode, no native RAW decoder, no runtime dependencies. Same API in **Node.js 20+** (a path, a `file:` URL, or bytes) and in the **browser** (`Uint8Array` only). ESM only.
-
-Unlike ExifTool-based tools, it walks the container itself (TIFF IFDs, CR3 BMFF, RAF header, PSD image resources), so it also runs in the browser.
-
-It currently extracts previews from:
-
-- **TIFF-family RAW** — Adobe DNG, Canon CR2, Nikon NEF, Sony ARW, Olympus ORF, Panasonic RW2, Pentax PEF, and generic TIFF
-- **Other containers** — Fujifilm RAF, Canon CR3, JPEG (EXIF thumbnail), Photoshop PSD and PSB
+A zero-dependency JavaScript and TypeScript library for extracting embedded JPEG and PNG thumbnails from camera RAW images. It supports Canon CR2/CR3, Nikon NEF, Sony ARW, Fujifilm RAF, Adobe DNG, Olympus ORF, Panasonic RW2, Pentax PEF, TIFF, JPEG EXIF thumbnails, and Photoshop PSD/PSB files in **Node.js and the browser**.
 
 ```bash
 npm install extract-raw-preview
 ```
 
-## Usage
+## Why use it?
+
+- **Fast previews without RAW decoding** — copies the camera's embedded preview instead of demosaicing sensor data.
+- **Browser and Node.js support** — process a local upload client-side, or read a path, `file:` URL, or bytes on a server.
+- **No native addons, WASM, binaries, or runtime dependencies** — pure ESM JavaScript with TypeScript declarations.
+- **Library and CLI** — use the async API or run `npx extract-raw-preview photo.cr3`.
+- **Multiple candidates** — select the largest or smallest decodable preview, enforce a byte limit, or inspect every embedded thumbnail.
+
+Use it to create photo-upload previews, RAW contact sheets, gallery and digital asset management thumbnails, file-manager previews, or fast ingestion pipelines. The image is returned exactly as stored: there is no pixel decode, re-encode, or resize, and the API does not extract or expose general EXIF metadata.
+
+Unlike ExifTool- or LibRaw-based tools, `extract-raw-preview` walks each container itself (TIFF IFDs, CR3 BMFF, RAF headers, and PSD image resources). This keeps it portable enough for client-side browser apps and serverless JavaScript environments.
+
+Supported containers:
+
+- **TIFF-family RAW** — Adobe DNG, Canon CR2, Nikon NEF, Sony ARW, Olympus ORF, Panasonic RW2, Pentax PEF, and generic TIFF
+- **Other containers** — Fujifilm RAF, Canon CR3, JPEG (EXIF thumbnail), Photoshop PSD and PSB
+
+> Need decoded pixels, white balance, resizing, or support for every camera format? Use a full RAW decoder such as LibRaw instead. This package is intentionally focused on quickly extracting an existing JPEG or PNG preview.
+
+## Quick start
+
+### Node.js
 
 ```ts
+import { writeFile } from "node:fs/promises";
 import { extractThumbnail, listThumbnails } from "extract-raw-preview";
 
 const result = await extractThumbnail("IMG_1234.CR2");
 
 if (result.found) {
-  await fs.writeFile("thumb.jpg", result.data); // 1936×1288 JPEG, as stored
+  await writeFile("thumb.jpg", result.data); // 1936×1288 JPEG, as stored
 } else {
   console.log(result.reason); // e.g. "only lossless-jpeg preview present"
 }
@@ -38,14 +52,29 @@ const candidates = await listThumbnails("photo.dng");
 // 3888×2592 image/jpeg 9578955B decodable=false
 ```
 
-In the browser, pass the file bytes. Bundlers pick the browser build automatically (no `node:fs`, no native addons):
+### Browser
+
+Pass the file bytes from an `<input type="file">` or drag-and-drop event. Bundlers pick the browser build automatically, with no `node:fs` or native addons:
 
 ```ts
 import { extractThumbnail } from "extract-raw-preview";
 
 const bytes = new Uint8Array(await file.arrayBuffer());
 const result = await extractThumbnail(bytes);
+
+if (result.found) {
+  const image = document.querySelector("img");
+
+  if (image) {
+    const blob = new Blob([Uint8Array.from(result.data)], { type: result.mimeType });
+    const previewUrl = URL.createObjectURL(blob);
+    image.addEventListener("load", () => URL.revokeObjectURL(previewUrl), { once: true });
+    image.src = previewUrl;
+  }
+}
 ```
+
+### Command line
 
 ```bash
 npx extract-raw-preview photo.cr2                 # writes photo.thumb.jpg
@@ -54,6 +83,10 @@ npx extract-raw-preview photo.tiff --list         # inspect, write nothing
 ```
 
 Input can be a path, a `file:` URL, or a `Uint8Array`. Format is sniffed from magic bytes. Paths and `file:` URLs are Node-only.
+
+## RAW preview extraction vs. RAW conversion
+
+Most camera RAW files contain one or more ready-made JPEG previews for camera playback and cataloging. This package extracts those embedded bytes, which is much faster and lighter than decoding the sensor data. It does **not** demosaic, color-correct, resize, or convert a RAW image to JPEG. For full RAW-to-JPEG conversion, use a native or WebAssembly RAW decoder.
 
 ## API
 

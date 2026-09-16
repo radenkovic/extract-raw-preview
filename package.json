@@ -99,7 +99,7 @@
     "fixtures:list": "node scripts/fixtures.ts --list",
     "fixtures:thumbs": "npm run build && node scripts/fixtures-thumbs.ts",
     "pretest": "npm run fixtures:check",
-    "test": "npm run build && node --test test/",
+    "test": "npm run build && node --test 'test/**/*.test.mjs'",
     "format": "biome format --write .",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",

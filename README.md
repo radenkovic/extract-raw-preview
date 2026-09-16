@@ -180,7 +180,7 @@ To add a format: one file in `src/formats/`, one line in `src/registry.ts`, and 
 
 ## Releasing
 
-Versioning uses [Changesets](https://changesets.dev). See [RELEASING.md](RELEASING.md) for the PR flow, the first `0.1.0` publish, and npm trusted publishing.
+Versioning uses [Changesets](https://changesets.dev). See [RELEASING.md](RELEASING.md) for the PR flow, the first `1.0.0` publish, and npm trusted publishing.
 
 ## License
 
